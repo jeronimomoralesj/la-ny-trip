@@ -17,11 +17,12 @@ export interface MapPin {
  * Leaflet touches `window`, so it's imported dynamically inside the effect.
  */
 export function TripMap({
-  pins, routes = [], onSelect, className, initialCenter = [-90, 25], initialZoom = 3, tiles = "dark",
+  pins, routes = [], onSelect, onPick, className, initialCenter = [-90, 25], initialZoom = 3, tiles = "dark",
 }: {
   pins: MapPin[];
   routes?: [number, number][][];
   onSelect?: (id: string) => void;
+  onPick?: (lng: number, lat: number) => void;
   className?: string;
   initialCenter?: [number, number];
   initialZoom?: number;
@@ -33,6 +34,8 @@ export function TripMap({
   const LRef = useRef<any>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onPickRef = useRef(onPick);
+  onPickRef.current = onPick;
   const [ready, setReady] = useState(0);
 
   // Init once
@@ -64,6 +67,8 @@ export function TripMap({
         const latlngs = coords.map(([lng, lat]) => [lat, lng]) as [number, number][];
         L.polyline(latlngs, { color: "#3b82f6", weight: 2.5, dashArray: "6 7", opacity: 0.85 }).addTo(map);
       });
+
+      map.on("click", (e: any) => onPickRef.current?.(e.latlng.lng, e.latlng.lat));
 
       layerRef.current = L.layerGroup().addTo(map);
       setReady((n) => n + 1);

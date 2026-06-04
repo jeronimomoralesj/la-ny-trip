@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Vote, Check, Plus, Trash2, CalendarClock, FileText, Flag } from "lucide-react";
+import { Vote, Check, Plus, Trash2, CalendarClock, FileText, Flag, Users } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { SEED_USERS, ELECTION_DAY } from "@/lib/seed-data";
@@ -19,6 +19,21 @@ const KEY_DATES = [
   { date: "2026-06-20", label: "Vuelo nocturno", detail: "JFK → BOG de noche" },
   { date: "2026-06-21", label: "Día de elecciones", detail: "Aterriza 06:30, urnas abren 08:00" },
   { date: "2026-06-21", label: "Cierre de urnas", detail: "Votar antes de las 16:00" },
+];
+
+interface Candidate {
+  name: string;
+  photo: string;
+  votes: number;
+  pct: number;
+  accent: string;
+  favorite?: boolean;
+}
+
+// Resultados primera vuelta — ambos avanzan a segunda vuelta.
+const CANDIDATES: Candidate[] = [
+  { name: "Abelardo de la Espriella", photo: "https://pbs.twimg.com/media/G1aRGMxXkAAZCSz.jpg", votes: 10_361_499, pct: 43.74, accent: "#f5c451", favorite: true },
+  { name: "Iván Cepeda", photo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl1FUbywApxxfaeIAaO0F9jhW-BDzvHRZMWA&s", votes: 9_688_361, pct: 40.9, accent: "#22d3ee" },
 ];
 
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
@@ -57,6 +72,49 @@ export default function ElectionsPage() {
             </div>
             <Countdown target={ELECTION_DAY} />
           </div>
+        </div>
+      </Card>
+
+      {/* Candidatos — Segunda vuelta */}
+      <Card className="p-5 sm:p-6">
+        <div className="mb-1 flex items-center gap-2">
+          <Users className="size-5 text-electric-400" />
+          <h3 className="font-semibold">Segunda vuelta — los candidatos</h3>
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">Resultados de la primera vuelta · ambos avanzan</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {CANDIDATES.map((c) => (
+            <div
+              key={c.name}
+              className={cn(
+                "relative overflow-hidden rounded-2xl border p-4 transition",
+                c.favorite ? "border-gold-500/50 bg-gold-500/[0.06] glow-gold" : "border-white/10 bg-white/[0.02]",
+              )}
+            >
+              {c.favorite && (
+                <span className="absolute right-3 top-3 z-10 rounded-full bg-gold-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy-950">
+                  ⭐ Favorito
+                </span>
+              )}
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c.photo}
+                  alt={c.name}
+                  className={cn("rounded-2xl object-cover", c.favorite ? "size-20 ring-2 ring-gold-400" : "size-16 ring-1 ring-white/15")}
+                />
+                <div className="min-w-0">
+                  <div className={cn("font-semibold leading-tight", c.favorite ? "text-lg text-gold-300" : "text-base")}>{c.name}</div>
+                  <div className="board-font mt-0.5 text-2xl font-bold" style={{ color: c.accent }}>{c.pct.toFixed(2)}%</div>
+                  <div className="text-xs text-muted-foreground">{c.votes.toLocaleString("es-CO")} votos</div>
+                </div>
+              </div>
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full" style={{ width: `${c.pct}%`, background: c.accent }} />
+              </div>
+              <div className="mt-2 text-[11px] font-medium text-emerald-400">Avanza a segunda vuelta ✓</div>
+            </div>
+          ))}
         </div>
       </Card>
 

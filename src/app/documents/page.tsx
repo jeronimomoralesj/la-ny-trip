@@ -8,7 +8,7 @@ import {
 import { motion } from "framer-motion";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { fileToBase64 } from "@/hooks/use-upload";
+import { fileToBase64, compressImageToBase64 } from "@/hooks/use-upload";
 import { notify } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
@@ -48,19 +48,27 @@ export default function DocumentsPage() {
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Firestore guarda hasta ~1MB por documento; base64 infla ~33%.
-    if (file.size > 720 * 1024) {
-      notify("El archivo es muy grande para guardar (máx. ~700 KB). Comprime el PDF o sube una captura.", "error");
-      if (fileRef.current) fileRef.current.value = "";
-      return;
-    }
+    const isImage = file.type.includes("image");
     setUploading(true);
     try {
-      const url = await fileToBase64(file); // se almacena en base64 (data URL)
-      const kind: DocumentKind = file.type.includes("image") ? "ticket" : "reservation";
+      // Las imágenes (capturas, fotos de tickets) se comprimen para que SIEMPRE quepan.
+      // Otros archivos (PDF) van tal cual, con un límite generoso (~950 KB por el tope de Firestore).
+      let url: string;
+      let sizeKb = Math.round(file.size / 1024);
+      if (isImage) {
+        url = await compressImageToBase64(file, 1600, 0.7);
+        sizeKb = Math.round((url.length * 0.75) / 1024);
+      } else {
+        if (file.size > 950 * 1024) {
+          notify("Ese PDF supera ~950 KB. Comprímelo (p. ej. en ilovepdf.com) o súbelo como captura de imagen.", "error");
+          return;
+        }
+        url = await fileToBase64(file);
+      }
+      const kind: DocumentKind = isImage ? "ticket" : "reservation";
       await add.mutateAsync({
-        name: file.name, kind, folder: newFolder, url, mimeType: file.type || "application/octet-stream",
-        uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(), sizeKb: Math.round(file.size / 1024),
+        name: file.name, kind, folder: newFolder, url, mimeType: isImage ? "image/jpeg" : (file.type || "application/octet-stream"),
+        uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(), sizeKb,
       } as Omit<TravelDocument, "id">);
       notify("Documento guardado", "success");
     } catch {

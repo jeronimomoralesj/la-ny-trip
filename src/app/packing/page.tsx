@@ -1,54 +1,105 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Check, Trash2, Luggage } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, Check, Trash2, Luggage, Nfc, Briefcase, Backpack } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
+import { notify } from "@/components/ui/toast";
 import { SEED_USERS } from "@/lib/seed-data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress, SectionTitle, Avatar } from "@/components/ui/misc";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { ChecklistItem } from "@/lib/types";
+
+const DEFAULT_BAGS = ["Maleta principal", "Carry-on", "Mochila"];
+const bagKey = (i: ChecklistItem) => i.bag || i.category || "General";
 
 export default function PackingPage() {
   const { user } = useAuth();
   const { data: items, add, update, remove } = useCollection<ChecklistItem>("checklists");
   const [owner, setOwner] = useState(user?.id ?? "jeronimo");
   const [label, setLabel] = useState("");
+  const [rfid, setRfid] = useState("");
+  const [activeBag, setActiveBag] = useState(DEFAULT_BAGS[0]);
+  const [customBags, setCustomBags] = useState<string[]>([]);
+
+  // Recordar maletas creadas por dueño
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`lanyviaje:bags:${owner}`);
+      setCustomBags(raw ? JSON.parse(raw) : []);
+    } catch { setCustomBags([]); }
+  }, [owner]);
 
   const mine = items.filter((i) => i.ownerId === owner);
   const done = mine.filter((i) => i.checked).length;
   const pct = mine.length ? (done / mine.length) * 100 : 0;
 
-  const grouped = mine.reduce<Record<string, ChecklistItem[]>>((acc, it) => {
-    (acc[it.category ?? "Other"] ??= []).push(it);
-    return acc;
-  }, {});
+  const bags = useMemo(() => {
+    const fromItems = mine.map(bagKey);
+    return Array.from(new Set([...DEFAULT_BAGS, ...customBags, ...fromItems]));
+  }, [mine, customBags]);
+
+  const grouped = useMemo(() => {
+    const g: Record<string, ChecklistItem[]> = {};
+    bags.forEach((b) => (g[b] = []));
+    mine.forEach((it) => { (g[bagKey(it)] ??= []).push(it); });
+    return bags.map((b) => [b, g[b] ?? []] as const).filter(([, list]) => list.length || true);
+  }, [mine, bags]);
 
   const addItem = () => {
     if (!label.trim()) return;
-    add.mutate({ ownerId: owner, label: label.trim(), checked: false, category: "Personalizado" } as Omit<ChecklistItem, "id">);
-    setLabel("");
+    add.mutate({ ownerId: owner, label: label.trim(), checked: false, bag: activeBag, ...(rfid ? { rfid } : {}) } as Omit<ChecklistItem, "id">);
+    setLabel(""); setRfid("");
   };
+
+  const addBag = () => {
+    const name = prompt("Nombre de la nueva maleta/bolso (ej. Bolso de mano):");
+    if (!name?.trim()) return;
+    const next = Array.from(new Set([...customBags, name.trim()]));
+    setCustomBags(next);
+    setActiveBag(name.trim());
+    try { localStorage.setItem(`lanyviaje:bags:${owner}`, JSON.stringify(next)); } catch { /* */ }
+  };
+
+  const scanRfid = async () => {
+    if (typeof window !== "undefined" && "NDEFReader" in window) {
+      try {
+        const reader = new (window as any).NDEFReader();
+        await reader.scan();
+        notify("Acerca la etiqueta NFC al teléfono…", "info");
+        reader.onreading = (e: any) => {
+          setRfid(e.serialNumber || "NFC-tag");
+          notify("Etiqueta NFC leída ✓", "success");
+        };
+      } catch {
+        notify("No se pudo iniciar el escaneo NFC.", "error");
+      }
+    } else {
+      const manual = prompt("Tu navegador no soporta NFC (usa Chrome en Android). Ingresa el código RFID manualmente:");
+      if (manual?.trim()) setRfid(manual.trim());
+    }
+  };
+
+  const bagIcon = (b: string) => /carry|mano|cabina/i.test(b) ? Briefcase : /mochila|backpack|morral/i.test(b) ? Backpack : Luggage;
 
   return (
     <div className="space-y-6">
       <SectionTitle eyebrow="Operaciones" title="Centro de Equipaje" />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs value={owner} onChange={setOwner} tabs={SEED_USERS.map((u) => ({ id: u.id, label: u.name }))} />
-      </div>
+      <Tabs value={owner} onChange={setOwner} tabs={SEED_USERS.map((u) => ({ id: u.id, label: u.name }))} />
 
       <div className="glass rounded-2xl p-5">
         <div className="flex items-center gap-4">
           <Avatar name={SEED_USERS.find((u) => u.id === owner)?.name ?? ""} color={SEED_USERS.find((u) => u.id === owner)?.avatarColor} size={48} />
           <div className="flex-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Maleta de {SEED_USERS.find((u) => u.id === owner)?.name}</span>
-              <span className="text-muted-foreground">{done}/{mine.length} empacado</span>
+              <span className="font-medium">Equipaje de {SEED_USERS.find((u) => u.id === owner)?.name}</span>
+              <span className="text-muted-foreground">{done}/{mine.length} empacado · {bags.length} bolsos</span>
             </div>
             <Progress value={pct} className="mt-2 h-2.5" />
           </div>
@@ -56,39 +107,69 @@ export default function PackingPage() {
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Input placeholder="Agregar un artículo…" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} />
-        <Button onClick={addItem}><Plus className="size-4" /> Agregar</Button>
+      {/* Agregar artículo */}
+      <div className="glass space-y-3 rounded-2xl p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">Agregar a:</span>
+          {bags.map((b) => {
+            const Icon = bagIcon(b);
+            return (
+              <button
+                key={b}
+                onClick={() => setActiveBag(b)}
+                className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition", activeBag === b ? "border-electric-500/50 bg-electric-500/15 text-white" : "border-white/10 text-muted-foreground")}
+              >
+                <Icon className="size-3.5" /> {b}
+              </button>
+            );
+          })}
+          <button onClick={addBag} className="flex items-center gap-1 rounded-full border border-dashed border-white/20 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground">
+            <Plus className="size-3.5" /> Maleta
+          </button>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input placeholder={`Agregar a "${activeBag}"…`} value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} />
+          <div className="flex gap-2">
+            <Button variant={rfid ? "gold" : "outline"} onClick={scanRfid} title="Escanear RFID/NFC">
+              <Nfc className="size-4" /> {rfid ? rfid.slice(0, 8) : "RFID"}
+            </Button>
+            <Button onClick={addItem}><Plus className="size-4" /> Agregar</Button>
+          </div>
+        </div>
       </div>
 
+      {/* Maletas */}
       <div className="grid gap-4 sm:grid-cols-2">
-        {Object.entries(grouped).map(([cat, list]) => (
-          <div key={cat} className="glass rounded-2xl p-4">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-electric-400">{cat}</div>
-            <div className="space-y-1">
-              {list.map((it) => (
-                <motion.div key={it.id} layout className="group flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.03]">
-                  <button
-                    onClick={() => update.mutate({ id: it.id, patch: { checked: !it.checked } })}
-                    className={cn("grid size-5 shrink-0 place-items-center rounded-md border transition", it.checked ? "border-emerald-500 bg-emerald-500 text-navy-950" : "border-white/20")}
-                  >
-                    {it.checked && <Check className="size-3.5" strokeWidth={3} />}
-                  </button>
-                  <span className={cn("flex-1 text-sm", it.checked && "text-muted-foreground line-through")}>{it.label}</span>
-                  <button onClick={() => remove.mutate(it.id)} className="opacity-0 transition group-hover:opacity-100">
-                    <Trash2 className="size-3.5 text-muted-foreground hover:text-red-400" />
-                  </button>
-                </motion.div>
-              ))}
+        {grouped.map(([bag, list]) => {
+          const Icon = bagIcon(bag);
+          const bagDone = list.filter((i) => i.checked).length;
+          return (
+            <div key={bag} className="glass rounded-2xl p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-electric-400"><Icon className="size-4" /> {bag}</div>
+                <span className="text-xs text-muted-foreground">{bagDone}/{list.length}</span>
+              </div>
+              <div className="space-y-1">
+                {list.map((it) => (
+                  <motion.div key={it.id} layout className="group flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.03]">
+                    <button
+                      onClick={() => update.mutate({ id: it.id, patch: { checked: !it.checked } })}
+                      className={cn("grid size-5 shrink-0 place-items-center rounded-md border transition", it.checked ? "border-emerald-500 bg-emerald-500 text-navy-950" : "border-white/20")}
+                    >
+                      {it.checked && <Check className="size-3.5" strokeWidth={3} />}
+                    </button>
+                    <span className={cn("flex-1 text-sm", it.checked && "text-muted-foreground line-through")}>{it.label}</span>
+                    {it.rfid && <Badge variant="cyan"><Nfc className="size-3" /> {it.rfid.slice(0, 10)}</Badge>}
+                    <button onClick={() => remove.mutate(it.id)} className="opacity-0 transition group-hover:opacity-100">
+                      <Trash2 className="size-3.5 text-muted-foreground hover:text-red-400" />
+                    </button>
+                  </motion.div>
+                ))}
+                {list.length === 0 && <p className="px-2 py-3 text-xs text-muted-foreground/60">Vacío — agrega artículos a esta maleta.</p>}
+              </div>
             </div>
-          </div>
-        ))}
-        {mine.length === 0 && (
-          <div className="col-span-full flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/10 py-12 text-center">
-            <Luggage className="size-8 text-muted-foreground/40" />
-            <p className="text-muted-foreground">Maleta vacía — agrega el primer artículo arriba.</p>
-          </div>
-        )}
+          );
+        })}
       </div>
     </div>
   );

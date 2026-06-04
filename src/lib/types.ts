@@ -171,6 +171,8 @@ export interface ChecklistItem {
   label: string;
   checked: boolean;
   category?: string;
+  bag?: string;   // qué maleta/bolso (carry-on, mochila, etc.)
+  rfid?: string;  // etiqueta RFID/NFC opcional
 }
 
 // ── Theme parks ───────────────────────────────────────────────

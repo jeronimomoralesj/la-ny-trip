@@ -11,7 +11,7 @@ import { notify } from "@/components/ui/toast";
 function explain(err: any): string {
   const code = String(err?.code ?? err?.message ?? "");
   if (code.includes("permission-denied") || code.includes("insufficient"))
-    return "Permiso denegado por Firestore. Revisa las reglas de seguridad (deben permitir lectura/escritura a usuarios autenticados).";
+    return "Firestore rechazó la escritura. En la consola: publica las Reglas (permitir a usuarios autenticados) y habilita el inicio de sesión Anónimo.";
   if (code.includes("unavailable") || code.includes("network"))
     return "Sin conexión con Firestore. Revisa tu internet.";
   if (code.includes("not-found"))

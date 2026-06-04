@@ -3,14 +3,15 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Upload, MapPin, Calendar, Grid3x3, Map as MapIcon, Navigation, Loader2 } from "lucide-react";
+import { Upload, MapPin, Calendar, Grid3x3, Map as MapIcon, Navigation, Loader2, LocateFixed, Crosshair } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { compressImageToBase64, extractGps } from "@/hooks/use-upload";
 import { notify } from "@/components/ui/toast";
 import { TripMap, type MapPin as Pin } from "@/components/map/trip-map";
-import { Drawer } from "@/components/ui/drawer";
+import { Drawer, Modal } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { SectionTitle, Avatar } from "@/components/ui/misc";
@@ -26,29 +27,57 @@ export default function PhotosPage() {
   const { data: photos, add } = useCollection<Photo>("photos");
   const [view, setView] = useState("gallery");
   const [selected, setSelected] = useState<Photo | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Estado del modal de subida
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>("");
+  const [title, setTitle] = useState("");
+  const [city, setCity] = useState("");
+  const [tags, setTags] = useState("");
+  const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
 
   const sorted = [...photos].sort((a, b) => +parseISO(b.uploadedAt) - +parseISO(a.uploadedAt));
   const geo = sorted.filter((p) => p.lat && p.lng);
 
-  const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    setPendingFile(file);
+    setPreview(URL.createObjectURL(file));
+    setTitle(file.name.replace(/\.[^.]+$/, ""));
+    setCity(""); setTags(""); setLoc(null);
+    const gps = await extractGps(file); // ubicación desde EXIF si existe
+    if (gps) { setLoc(gps); notify("Ubicación detectada en la foto (EXIF)", "info"); }
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) { notify("Geolocalización no disponible.", "error"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }); notify("Ubicación actual fijada ✓", "success"); },
+      () => notify("No se pudo obtener tu ubicación.", "error"),
+    );
+  };
+
+  const savePhoto = async () => {
+    if (!pendingFile) return;
+    setSaving(true);
     try {
-      const [url, gps] = await Promise.all([compressImageToBase64(file), extractGps(file)]);
+      const url = await compressImageToBase64(pendingFile);
       await add.mutateAsync({
         url, uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(),
-        title: file.name.replace(/\.[^.]+$/, ""), tags: [], city: "",
-        ...(gps ? { lat: gps.lat, lng: gps.lng } : {}),
+        title: title.trim() || "Foto", city: city.trim(),
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        ...(loc ? { lat: loc.lat, lng: loc.lng } : {}),
       } as Omit<Photo, "id">);
       notify("Foto subida", "success");
+      setPendingFile(null); setPreview("");
     } catch {
       /* el toast de error ya se muestra */
     } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
+      setSaving(false);
     }
   };
 
@@ -66,10 +95,10 @@ export default function PhotosPage() {
         action={
           <div className="flex items-center gap-2">
             <Tabs value={view} onChange={setView} tabs={[{ id: "gallery", label: "Galería", icon: Grid3x3 }, { id: "map", label: "Mapa", icon: MapIcon }, { id: "timeline", label: "Línea", icon: Calendar }]} />
-            <Button variant="gold" onClick={() => fileRef.current?.click()} disabled={uploading}>
-              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Subir
+            <Button variant="gold" onClick={() => fileRef.current?.click()}>
+              <Upload className="size-4" /> Subir
             </Button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickFile} />
           </div>
         }
       />
@@ -157,6 +186,46 @@ export default function PhotosPage() {
           </div>
         )}
       </Drawer>
+
+      {/* Modal de subida con título + ubicación */}
+      <Modal open={!!pendingFile} onClose={() => { setPendingFile(null); setPreview(""); }} title="Nueva foto" maxWidth="max-w-lg">
+        {pendingFile && (
+          <div className="space-y-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="preview" className="max-h-52 w-full rounded-xl object-cover" />
+            <Input placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="Ciudad (opcional)" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Input placeholder="Tags: playa, mundial…" value={tags} onChange={(e) => setTags(e.target.value)} />
+            </div>
+
+            <div className="rounded-xl border border-white/10 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Ubicación (opcional)</span>
+                <Button variant="outline" size="sm" onClick={useCurrentLocation}>
+                  <LocateFixed className="size-3.5" /> Mi ubicación
+                </Button>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-white/10">
+                <TripMap
+                  pins={loc ? [{ id: "pick", lng: loc.lng, lat: loc.lat, title: title || "Aquí", color: "#ec4899" }] : []}
+                  onPick={(lng, lat) => setLoc({ lat, lng })}
+                  initialCenter={loc ? [loc.lng, loc.lat] : [-118.24, 34.05]}
+                  initialZoom={loc ? 13 : 9}
+                  className="h-44 w-full"
+                />
+              </div>
+              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Crosshair className="size-3" /> {loc ? `Pin en ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)} — toca el mapa para mover` : "Toca el mapa para poner un pin, o usa tu ubicación / EXIF"}
+              </p>
+            </div>
+
+            <Button className="w-full" onClick={savePhoto} disabled={saving}>
+              {saving ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} {saving ? "Subiendo…" : "Subir foto"}
+            </Button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

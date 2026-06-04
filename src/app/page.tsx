@@ -12,6 +12,7 @@ import { useWeather } from "@/hooks/use-weather";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { currentPhase, nextEvent, tripProgress, groupCurrentCity, nextCityArrival, eventsForGroup } from "@/lib/trip";
+import { TRIP_START } from "@/lib/seed-data";
 import { Countdown } from "@/components/widgets/countdown";
 import { Progress, Stat } from "@/components/ui/misc";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   const nextCity = nextCityArrival(now, flights, group);
   const progress = tripProgress(now);
   const currentCity = groupCurrentCity(now, events, group);
+  const beforeStart = now < +new Date(TRIP_START);
 
   const todays = eventsForGroup(events, group)
     .filter((e) => isToday(parseISO(e.start)) || e.day === fmt(now, "yyyy-MM-dd"));
@@ -100,12 +102,21 @@ export default function DashboardPage() {
               {next ? <>Próxima actividad: <span className="text-foreground">{next.title}</span></> : "Viaje completo — bienvenido a casa."}
             </p>
 
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Progreso del viaje</span><span>{Math.round(progress)}%</span>
+            {beforeStart ? (
+              <div className="mt-5">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-400">
+                  El viaje empieza en
+                </div>
+                <Countdown target={TRIP_START} />
               </div>
-              <Progress value={progress} className="h-2.5" />
-            </div>
+            ) : (
+              <div className="mt-5">
+                <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Progreso del viaje</span><span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2.5" />
+              </div>
+            )}
           </div>
 
           <div className="grid shrink-0 gap-3 sm:grid-cols-2 lg:grid-cols-1">

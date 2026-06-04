@@ -61,7 +61,7 @@ export default function FlightsPage() {
               className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-white/5 px-5 py-4 transition hover:bg-white/[0.03] sm:grid-cols-[auto_1fr_auto_auto_auto]"
             >
               <div className="board-font">
-                <div className="font-bold">{f.flightNumber}</div>
+                <div className="flex items-center gap-2"><span className="font-bold">{f.flightNumber}</span>{f.group && f.group !== "all" && <Badge variant="muted">{GROUP_LABEL[f.group]}</Badge>}</div>
                 <div className="text-xs text-muted-foreground">{f.airline}</div>
               </div>
               <div className="hidden items-center gap-2 sm:flex">
@@ -98,6 +98,7 @@ export default function FlightsPage() {
                     <div className="board-font text-3xl font-bold">{f.from.code}</div>
                     <div className="text-xs text-muted-foreground">{f.from.city}</div>
                     <div className="board-font mt-1 text-sm">{fmt(parseISO(f.departure), "HH:mm")}</div>
+                    <div className="text-[10px] text-muted-foreground">{fmt(parseISO(f.departure), "EEE d MMM")}</div>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="text-[10px] text-muted-foreground">{Math.floor(dur / 60)}h {dur % 60}m</div>
@@ -111,6 +112,7 @@ export default function FlightsPage() {
                     <div className="board-font text-3xl font-bold">{f.to.code}</div>
                     <div className="text-xs text-muted-foreground">{f.to.city}</div>
                     <div className="board-font mt-1 text-sm">{fmt(parseISO(f.arrival), "HH:mm")}</div>
+                    <div className="text-[10px] text-muted-foreground">{fmt(parseISO(f.arrival), "EEE d MMM")}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-2 border-t border-white/10 px-5 py-3 text-center text-xs">

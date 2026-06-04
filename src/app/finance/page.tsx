@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
 } from "recharts";
-import { TrendingUp, Users, Wallet, PiggyBank } from "lucide-react";
+import { TrendingUp, Users, Wallet, PiggyBank, Filter } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { SEED_USERS } from "@/lib/seed-data";
 import { computeBalances, computeSettlements } from "@/lib/trip";
@@ -34,17 +34,22 @@ export default function FinancePage() {
 
 function FinanceInner() {
   const { data: expenses } = useCollection<Expense>("expenses");
+  const [person, setPerson] = useState<string>("all");
 
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
-  const shared = expenses.filter((e) => e.shared).reduce((s, e) => s + e.amount, 0);
-  const balances = computeBalances(expenses, USER_IDS);
+  // Vista filtrada por persona (lo que pagó esa persona)
+  const scoped = person === "all" ? expenses : expenses.filter((e) => e.payerId === person);
+
+  const total = scoped.reduce((s, e) => s + e.amount, 0);
+  const shared = scoped.filter((e) => e.shared).reduce((s, e) => s + e.amount, 0);
+  const personal = scoped.filter((e) => !e.shared).reduce((s, e) => s + e.amount, 0);
+  const balances = computeBalances(expenses, USER_IDS); // saldos siempre sobre el total del grupo
   const settlements = computeSettlements(balances);
 
   const byCategory = useMemo(() => {
     const map: Record<string, number> = {};
-    expenses.forEach((e) => { map[e.category] = (map[e.category] ?? 0) + e.amount; });
+    scoped.forEach((e) => { map[e.category] = (map[e.category] ?? 0) + e.amount; });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  }, [scoped]);
 
   const byUser = useMemo(
     () => USER_IDS.map((id) => ({
@@ -59,11 +64,31 @@ function FinanceInner() {
     <div className="space-y-6">
       <SectionTitle eyebrow="Dinero" title="Centro Financiero" />
 
+      {/* Filtro por persona */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Filter className="size-3.5" /> Filtrar:</span>
+        <button
+          onClick={() => setPerson("all")}
+          className={`rounded-full border px-3 py-1 text-xs font-medium transition ${person === "all" ? "border-electric-500/50 bg-electric-500/15 text-white" : "border-white/10 text-muted-foreground"}`}
+        >
+          Todos
+        </button>
+        {SEED_USERS.map((u) => (
+          <button
+            key={u.id}
+            onClick={() => setPerson(u.id)}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${person === u.id ? "border-electric-500/50 bg-electric-500/15 text-white" : "border-white/10 text-muted-foreground"}`}
+          >
+            <Avatar name={u.name} color={u.avatarColor} size={18} /> {u.name}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Gasto total" value={formatUSD(total)} accent="#3b82f6" />
-        <Stat label="Bolsa compartida" value={formatUSD(shared)} sub={`${Math.round((shared / total) * 100) || 0}% del total`} accent="#22d3ee" />
-        <Stat label="Por persona" value={formatUSD(total / 4)} sub="división equitativa" accent="#f5c451" />
-        <Stat label="Gastos" value={expenses.length} sub="registrados" accent="#a78bfa" />
+        <Stat label={person === "all" ? "Gasto total" : "Pagado"} value={formatUSD(total)} accent="#3b82f6" />
+        <Stat label="Compartido" value={formatUSD(shared)} sub={`${Math.round((shared / total) * 100) || 0}% del total`} accent="#22d3ee" />
+        <Stat label="Personal" value={formatUSD(personal)} sub={`${Math.round((personal / total) * 100) || 0}% del total`} accent="#f5c451" />
+        <Stat label="Gastos" value={scoped.length} sub="registrados" accent="#a78bfa" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

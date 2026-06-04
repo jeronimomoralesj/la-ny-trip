@@ -10,11 +10,17 @@ export interface ParkAttraction {
   avgWait: number; // promedio histórico de espera en minutos
 }
 
+export type DiningCategory = "Sit-down" | "Quick-service" | "Bar/Lounge" | "Postre" | "Café";
+
 export interface ParkDining {
   name: string;
-  type: string; // tipo de comida
-  price: string; // rango en USD
-  menu?: string[]; // platos destacados con precio
+  type: string;            // tipo / cocina
+  category: DiningCategory;
+  price: string;           // rango en USD
+  tier: 1 | 2 | 3;         // $ / $$ / $$$  (para filtrar)
+  location?: string;       // área del parque
+  description?: string;
+  yelp: string;            // enlace directo a Yelp
 }
 
 /** Enlace de búsqueda en Yelp para ver fotos, menú y reseñas del lugar. */
@@ -127,17 +133,30 @@ const DISNEYLAND: ParkInfo = {
     { id: "dl-roger-rabbit", name: "Roger Rabbit's Car Toon Spin", land: "Toontown", type: "dark", avgWait: 30 },
   ],
   dining: [
-    { name: "Blue Bayou Restaurant", type: "Cena criolla (sit-down)", price: "$40–60", menu: ["Filete Mignon — $54", "Gumbo de pollo y andouille — $26", "Monte Cristo (clásico) — $39", "Pescado del día — $42"] },
-    { name: "Café Orleans", type: "Cajún / francesa", price: "$25–35", menu: ["Monte Cristo — $24", "Pommes frites con tres salsas — $13", "Gumbo — $21", "Crepe de pollo — $26"] },
-    { name: "Bengal Barbecue", type: "Pinchos / snacks", price: "$8–12", menu: ["Pincho Banyan (res) — $7.49", "Pincho Bengal (pollo) — $6.99", "Pincho de vegetales — $5.99", "Pretzel tigre — $8.49"] },
-    { name: "Galactic Grill", type: "Hamburguesas", price: "$12–18", menu: ["Cheeseburger — $13.99", "Pollo crispy — $13.49", "Ensalada — $11.49", "Papas — $4.99"] },
-    { name: "Plaza Inn", type: "Comida casera (buffet)", price: "$18–25", menu: ["Pollo frito — $22.99", "Pot roast — $23.99", "Pasta — $17.99"] },
-    { name: "Rancho del Zócalo", type: "Mexicana", price: "$15–20", menu: ["Burrito de carne asada — $16.49", "Tacos de pollo — $15.49", "Enchiladas — $16.99", "Nachos — $13.49"] },
-    { name: "Docking Bay 7 (Galaxy's Edge)", type: "Temática Star Wars", price: "$14–20", menu: ["Fried Endorian Tip-Yip (pollo) — $17.99", "Smoked Kaadu Ribs — $19.49", "Felucian Garden Spread (vegano) — $14.99"] },
-    { name: "Ronto Roasters", type: "Wraps / snacks", price: "$12–16", menu: ["Ronto Wrap — $14.49", "Ronto Morning Wrap — $13.49", "Bebida Tatooine — $6.49"] },
-    { name: "Jolly Holiday Bakery", type: "Panadería / café", price: "$8–14", menu: ["Sándwich de jamón y queso — $11.99", "Sopa de tomate y grilled cheese — $12.49", "Mickey beignets — $6.49"] },
-    { name: "Tropical Hideaway", type: "Postres (Dole Whip)", price: "$6–10", menu: ["Dole Whip — $6.49", "Dole Whip flotante — $7.49", "Lumpia de durazno — $5.99"] },
-    { name: "Mint Julep Bar", type: "Bebidas / beignets", price: "$5–8", menu: ["Mint Julep — $5.49", "3 beignets de Mickey — $6.49", "Beignets sabor temporada — $7.49"] },
+    { name: "Blue Bayou Restaurant", type: "Cena criolla (sit-down)", category: "Sit-down", price: "$40–60", tier: 3, location: "New Orleans Square", yelp: "https://www.yelp.com/biz/blue-bayou-restaurant-anaheim" },
+    { name: "Café Orleans", type: "Cajún / francesa", category: "Sit-down", price: "$25–35", tier: 2, location: "New Orleans Square", yelp: "https://www.yelp.com/biz/cafe-orleans-anaheim" },
+    { name: "Carnation Cafe", type: "Americana (table-service)", category: "Sit-down", price: "$25–40", tier: 2, location: "Main Street, U.S.A.", description: "Comfort food: meatloaf casero, chicken fried steak y fried pickles.", yelp: "https://www.yelp.com/biz/carnation-cafe-anaheim" },
+    { name: "Oga's Cantina", type: "Lounge / bar temático", category: "Bar/Lounge", price: "$15–30", tier: 2, location: "Star Wars: Galaxy's Edge", description: "Taberna inmersiva de Star Wars con tragos únicos y un droide DJ.", yelp: "https://www.yelp.com/biz/ogas-cantina-anaheim" },
+    { name: "Bengal Barbecue", type: "Pinchos / snacks", category: "Quick-service", price: "$8–12", tier: 1, location: "Adventureland", yelp: "https://www.yelp.com/biz/bengal-barbecue-anaheim" },
+    { name: "Galactic Grill", type: "Hamburguesas", category: "Quick-service", price: "$12–18", tier: 1, location: "Tomorrowland", yelp: "https://www.yelp.com/biz/galactic-grill-anaheim" },
+    { name: "Plaza Inn", type: "Comida casera (buffet)", category: "Quick-service", price: "$18–25", tier: 2, location: "Main Street, U.S.A.", yelp: "https://www.yelp.com/biz/plaza-inn-anaheim" },
+    { name: "Rancho del Zócalo Restaurante", type: "Mexicana", category: "Quick-service", price: "$15–20", tier: 2, location: "Frontierland", yelp: "https://www.yelp.com/biz/rancho-del-zocalo-restaurante-anaheim" },
+    { name: "Docking Bay 7 Food and Cargo", type: "Temática Star Wars", category: "Quick-service", price: "$14–20", tier: 2, location: "Star Wars: Galaxy's Edge", yelp: "https://www.yelp.com/biz/docking-bay-7-food-and-cargo-anaheim" },
+    { name: "Ronto Roasters", type: "Wraps / snacks", category: "Quick-service", price: "$12–16", tier: 1, location: "Star Wars: Galaxy's Edge", yelp: "https://www.yelp.com/biz/ronto-roasters-anaheim" },
+    { name: "Red Rose Taverne", type: "Francesa-americana (QS)", category: "Quick-service", price: "$13–20", tier: 1, location: "Fantasyland", description: "Temática La Bella y la Bestia: flatbreads, poutine, burgers y el 'Grey Stuff'.", yelp: "https://www.yelp.com/biz/red-rose-taverne-anaheim" },
+    { name: "Tiana's Palace", type: "Criolla & cajún (QS)", category: "Quick-service", price: "$14–20", tier: 2, location: "New Orleans Square", description: "Inspirado en Tiana: gumbo casero, muffuletta y beignets.", yelp: "https://www.yelp.com/biz/tianas-palace-anaheim" },
+    { name: "Hungry Bear Barbecue Jamboree", type: "BBQ (QS)", category: "Quick-service", price: "$14–22", tier: 2, location: "Critter Country", description: "BBQ regional junto al río: pulled pork y brisket.", yelp: "https://www.yelp.com/biz/hungry-bear-restaurant-anaheim" },
+    { name: "Harbour Galley", type: "Mariscos & sopas (QS)", category: "Quick-service", price: "$12–18", tier: 1, location: "Critter Country", description: "Bread bowls de clam chowder o lobster mac & cheese.", yelp: "https://www.yelp.com/biz/harbour-galley-anaheim" },
+    { name: "Alien Pizza Planet", type: "Italiana (QS)", category: "Quick-service", price: "$12–18", tier: 1, location: "Tomorrowland", description: "Temática Toy Story: pizza, pastas personalizables y breadsticks.", yelp: "https://www.yelp.com/biz/alien-pizza-planet-anaheim" },
+    { name: "Stage Door Café", type: "Comfort food (QS)", category: "Quick-service", price: "$10–15", tier: 1, location: "Frontierland", description: "Ventana famosa por corn dogs hechos a mano y funnel cakes.", yelp: "https://www.yelp.com/biz/stage-door-caf%C3%A9-anaheim" },
+    { name: "Golden Horseshoe", type: "Americana / postres (QS)", category: "Quick-service", price: "$10–16", tier: 1, location: "Frontierland", description: "Saloon histórico con piano en vivo: tenders, fish & chips y sundaes.", yelp: "https://www.yelp.com/biz/the-golden-horseshoe-anaheim" },
+    { name: "Troubadour Tavern", type: "Snacks (QS)", category: "Quick-service", price: "$10–16", tier: 1, location: "Fantasyland", description: "Bratwurst, papas rellenas grandes y snacks de temporada.", yelp: "https://www.yelp.com/biz/troubadour-tavern-anaheim" },
+    { name: "Daisy's Cafe", type: "Diner (QS)", category: "Quick-service", price: "$10–16", tier: 1, location: "Mickey's Toontown", description: "Diner estilo caricatura: pizzas personales, wraps y dulces temáticos.", yelp: "https://www.yelp.com/biz/daisys-cafe-anaheim" },
+    { name: "Jolly Holiday Bakery Cafe", type: "Panadería / café", category: "Café", price: "$8–14", tier: 1, location: "Main Street, U.S.A.", yelp: "https://www.yelp.com/biz/jolly-holiday-bakery-cafe-anaheim" },
+    { name: "The Tropical Hideaway", type: "Postres (Dole Whip / Bao)", category: "Postre", price: "$6–10", tier: 1, location: "Adventureland", yelp: "https://www.yelp.com/biz/the-tropical-hideaway-anaheim" },
+    { name: "Tiki Juice Bar", type: "Postres (Dole Whip)", category: "Postre", price: "$6–10", tier: 1, location: "Adventureland", description: "La ventana original del Dole Whip, junto al Enchanted Tiki Room.", yelp: "https://www.yelp.com/biz/tiki-juice-bar-anaheim" },
+    { name: "Gibson Girl Ice Cream Parlor", type: "Helados", category: "Postre", price: "$6–12", tier: 1, location: "Main Street, U.S.A.", description: "Heladería nostálgica con Ben & Jerry's en conos de waffle horneados.", yelp: "https://www.yelp.com/biz/gibson-girl-ice-cream-parlor-anaheim" },
+    { name: "Mint Julep Bar", type: "Bebidas / beignets", category: "Postre", price: "$6–10", tier: 1, location: "New Orleans Square", yelp: "https://www.yelp.com/biz/mint-julep-bar-anaheim" },
   ],
   suggestedRoute: [
     { time: "8:00", title: "Rope drop: Star Wars: Rise of the Resistance", note: "La fila más larga del día — entra primero o saca Lightning Lane." },
@@ -196,13 +215,14 @@ const SIX_FLAGS: ParkInfo = {
     { id: "sf-roaring-rapids", name: "Roaring Rapids", land: "—", type: "water", avgWait: 30 },
   ],
   dining: [
-    { name: "Johnny Rockets", type: "Hamburguesas / malteadas", price: "$12–18", menu: ["The Original burger — $13.99", "Bacon cheddar burger — $15.49", "Malteada — $7.49", "Aros de cebolla — $5.99"] },
-    { name: "Full Throttle Sports Bar", type: "Bar deportivo", price: "$15–22", menu: ["Alitas (12) — $18.99", "Nachos cargados — $15.49", "Cerveza artesanal — $11", "Pretzel gigante — $12.49"] },
-    { name: "Macho Nacho", type: "Mexicana", price: "$10–14", menu: ["Burrito — $12.99", "Nachos supreme — $11.49", "Tacos (3) — $11.99"] },
-    { name: "Chop Six", type: "Asiática", price: "$12–16", menu: ["Orange chicken bowl — $13.99", "Lo mein — $12.99", "Egg rolls — $6.49"] },
-    { name: "Mooseburger Lodge", type: "Hamburguesas (sit-down)", price: "$14–20", menu: ["Moose burger doble — $18.99", "Sándwich de pollo — $15.99", "Ensalada Cobb — $14.49"] },
-    { name: "Cyber Cafe", type: "Pizza / café", price: "$10–15", menu: ["Pizza personal pepperoni — $12.99", "Slice + bebida — $9.99", "Café / espresso — $4.99"] },
-    { name: "Katy's Kettle", type: "Snacks / dulces", price: "$6–10", menu: ["Funnel cake — $9.99", "Pretzel — $7.49", "Algodón de azúcar — $6.49"] },
+    { name: "Food Etc.", type: "Plaza multi-cocina", category: "Quick-service", price: "$10–18", tier: 1, location: "Centro del parque", description: "Patio de comidas con estaciones mexicana, sushi y postres como Dole Whip.", yelp: "https://www.yelp.com/biz/food-etc-valencia" },
+    { name: "ACE O'CLUBS", type: "BBQ", category: "Quick-service", price: "$14–22", tier: 2, location: "Metropolis", description: "Sándwiches de brisket ahumado, baby back ribs y muslos de pavo gigantes.", yelp: "https://www.yelp.com/biz/ace-o-clubs-valencia" },
+    { name: "Big Belly Burger", type: "Hamburguesas", category: "Quick-service", price: "$12–18", tier: 1, location: "DC Universe", description: "Cheeseburgers clásicas, papas y bebidas.", yelp: "https://www.yelp.com/biz/big-belly-burger-valencia" },
+    { name: "Max'd Out Mac & Screaming Spuds", type: "Comfort food", category: "Quick-service", price: "$12–18", tier: 1, description: "Bowls cargados de mac & cheese gourmet o papas rellenas con brisket.", yelp: "https://www.yelp.com/biz/maxd-out-mac-and-screaming-spuds-valencia" },
+    { name: "Chicken Coupe", type: "Pollo", category: "Quick-service", price: "$12–17", tier: 1, location: "Screampunk District", description: "Tenders empanizados a mano, sándwiches de pollo y crinkle-cut fries.", yelp: "https://www.yelp.com/biz/chicken-coupe-valencia" },
+    { name: "Twin Charged Tacos", type: "Mexicana", category: "Quick-service", price: "$10–16", tier: 1, location: "Cerca de West Coast Racers", description: "Tacos de calle, pupusas y acompañamientos calientes.", yelp: "https://www.yelp.com/biz/twin-charged-tacos-valencia" },
+    { name: "The Funnel Cake Factory", type: "Postres", category: "Postre", price: "$8–13", tier: 1, description: "Funnel cakes recién fritos con azúcar glas, soft-serve y frutas.", yelp: "https://www.yelp.com/biz/funnel-cake-factory-valencia" },
+    { name: "Plaza Ice Cream & Shakes", type: "Postres & malteadas", category: "Postre", price: "$8–14", tier: 1, description: "Famosos 'Thrill Shakes' cargados de galletas, torta y dulces.", yelp: "https://www.yelp.com/biz/plaza-ice-cream-and-shakes-valencia" },
   ],
   suggestedRoute: [
     { time: "10:30", title: "Apertura + X2", note: "El coaster estrella primero (4D). Suele tener la mayor espera." },
@@ -256,13 +276,28 @@ const DCA: ParkInfo = {
     { id: "dca-redwood", name: "Redwood Creek Challenge Trail", land: "Grizzly Peak", type: "family", avgWait: 5 },
   ],
   dining: [
-    { name: "Carthay Circle Restaurant", type: "Cena fina (sit-down)", price: "$45–70", menu: ["Filete + langosta — $66", "Risotto de hongos — $34", "Famosos biscuits de queso y chile — $18"] },
-    { name: "Lamplight Lounge", type: "Gastropub (Pixar Pier)", price: "$25–40", menu: ["Lobster Nachos — $28", "Burger del muelle — $24", "Donuts rellenos — $14"] },
-    { name: "Pym Test Kitchen", type: "Avengers Campus", price: "$14–22", menu: ["PB3 Superb Sandwich — $16.99", "Impossible Quantum Garden (vegano) — $15.49", "Pym-ini gigante — $18.99"] },
-    { name: "Cocina Cucamonga", type: "Mexicana (Pacific Wharf)", price: "$12–18", menu: ["Tacos de carnitas — $14.49", "Burrito California — $15.99", "Elote — $6.49"] },
-    { name: "Award Wieners", type: "Hot dogs (Hollywood Land)", price: "$10–15", menu: ["Hot dog clásico — $11.49", "Chili cheese dog — $13.49", "Corn dog gigante — $12.99"] },
-    { name: "Flo's V8 Cafe", type: "Comida casera (Cars Land)", price: "$14–20", menu: ["Plato de carne mechada — $17.99", "Pollo rostizado — $16.99", "Tazón vegetariano — $14.49"] },
-    { name: "Smokejumpers Grill", type: "Hamburguesas (Grizzly Peak)", price: "$13–19", menu: ["Smokejumper burger — $16.99", "Pollo crispy — $14.99", "Papas con tocineta — $7.49"] },
+    { name: "Carthay Circle Restaurant", type: "Cena fina (sit-down)", category: "Sit-down", price: "$45–70", tier: 3, location: "Buena Vista Street", yelp: "https://www.yelp.com/biz/carthay-circle-restaurant-anaheim" },
+    { name: "Lamplight Lounge", type: "Gastropub", category: "Sit-down", price: "$25–40", tier: 2, location: "Pixar Pier", yelp: "https://www.yelp.com/biz/lamplight-lounge-anaheim" },
+    { name: "Wine Country Trattoria", type: "Italiana (table-service)", category: "Sit-down", price: "$28–45", tier: 3, location: "Performance Corridor", description: "Villa mediterránea con pastas, ribeye y carta de vinos extensa.", yelp: "https://www.yelp.com/biz/wine-country-trattoria-anaheim" },
+    { name: "Pym Test Kitchen", type: "Comfort innovadora", category: "Quick-service", price: "$14–22", tier: 2, location: "Avengers Campus", yelp: "https://www.yelp.com/biz/pym-test-kitchen-anaheim" },
+    { name: "Cocina Cucamonga Mexican Grill", type: "Mexicana", category: "Quick-service", price: "$12–18", tier: 1, location: "San Fransokyo Square", yelp: "https://www.yelp.com/biz/cocina-cucamonga-mexican-grill-anaheim" },
+    { name: "Award Wieners", type: "Hot dogs", category: "Quick-service", price: "$10–15", tier: 1, location: "Hollywood Land", yelp: "https://www.yelp.com/biz/award-wieners-anaheim" },
+    { name: "Flo's V8 Cafe", type: "Diner americano", category: "Quick-service", price: "$14–20", tier: 2, location: "Cars Land", yelp: "https://www.yelp.com/biz/flos-v8-cafe-anaheim" },
+    { name: "Smokejumpers Grill", type: "Hamburguesas / americana", category: "Quick-service", price: "$14–20", tier: 2, location: "Grizzly Peak", yelp: "https://www.yelp.com/biz/smokejumpers-grill-anaheim" },
+    { name: "Lucky Fortune Cookery", type: "Asiática", category: "Quick-service", price: "$12–18", tier: 1, location: "San Fransokyo Square", description: "Bowls de teriyaki, bulgogi y potstickers.", yelp: "https://www.yelp.com/biz/lucky-fortune-cookery-anaheim" },
+    { name: "Aunt Cass Cafe", type: "Panadería & café", category: "Café", price: "$10–16", tier: 1, location: "San Fransokyo Square", description: "Bread bowls de clam chowder o mac & cheese y pastelería.", yelp: "https://www.yelp.com/biz/aunt-cass-cafe-anaheim" },
+    { name: "Boardwalk Pizza & Pasta", type: "Italiana", category: "Quick-service", price: "$13–20", tier: 1, location: "Paradise Gardens Park", description: "Pizzas, pastas (spaghetti, ravioli) y ensaladas.", yelp: "https://www.yelp.com/biz/boardwalk-pizza-and-pasta-anaheim" },
+    { name: "Paradise Garden Grill", type: "Estacional", category: "Quick-service", price: "$13–20", tier: 1, location: "Paradise Gardens Park", description: "Menú que rota según el festival del parque.", yelp: "https://www.yelp.com/biz/paradise-garden-grill-anaheim" },
+    { name: "Port of San Fransokyo Cerveceria", type: "Bar / snacks", category: "Bar/Lounge", price: "$12–20", tier: 2, location: "San Fransokyo Square", description: "Beer garden con cervezas locales, elote y chips de ajo.", yelp: "https://www.yelp.com/biz/port-of-san-fransokyo-cerveceria-anaheim" },
+    { name: "Mendocino Terrace", type: "Wine bar & lounge", category: "Bar/Lounge", price: "$15–30", tier: 2, location: "Performance Corridor", description: "Patio para catas de vino, flights y charcutería.", yelp: "https://www.yelp.com/biz/mendocino-terrace-anaheim" },
+    { name: "Sonoma Terrace", type: "Cerveza & lounge", category: "Bar/Lounge", price: "$12–22", tier: 2, location: "Performance Corridor", description: "Cervezas artesanales de California, sidra, cócteles y pretzels.", yelp: "https://www.yelp.com/biz/sonoma-terrace-anaheim" },
+    { name: "Bayside Brews", type: "Cerveza artesanal", category: "Bar/Lounge", price: "$10–18", tier: 1, location: "Pixar Pier", description: "Ventana con cervezas de barril, sidra y pretzels de Mickey.", yelp: "https://www.yelp.com/biz/bayside-brews-anaheim" },
+    { name: "Fiddler, Fifer & Practical Cafe", type: "Café (Starbucks)", category: "Café", price: "$6–14", tier: 1, location: "Buena Vista Street", description: "El Starbucks del parque + pastelería y desayunos Disney.", yelp: "https://www.yelp.com/biz/fiddler-fifer-and-practical-cafe-anaheim" },
+    { name: "Clarabelle's Hand-Scooped Ice Cream", type: "Helados", category: "Postre", price: "$6–12", tier: 1, location: "Buena Vista Street", description: "Sundaes, barras de helado bañadas al momento y floats.", yelp: "https://www.yelp.com/biz/clarabelles-hand-scooped-ice-cream-anaheim" },
+    { name: "Cozy Cone Motel", type: "Snacks en cono", category: "Postre", price: "$6–12", tier: 1, location: "Cars Land", description: "5 conos temáticos: chili cone queso, popcorn, churros o soft-serve.", yelp: "https://www.yelp.com/biz/cozy-cone-motel-anaheim" },
+    { name: "Schmoozies!", type: "Smoothies & dulces", category: "Postre", price: "$7–12", tier: 1, location: "Hollywood Land", description: "Smoothies de fruta, donas de temporada y café helado.", yelp: "https://www.yelp.com/biz/schmoozies-anaheim" },
+    { name: "Adorable Snowman Frosted Treats", type: "Postres", category: "Postre", price: "$6–10", tier: 1, location: "Pixar Pier", description: "Soft-serve de limón sin lácteos y el 'Pixar Pier Frosty Parfait'.", yelp: "https://www.yelp.com/biz/adorable-snowman-frosted-treats-anaheim" },
+    { name: "Ghirardelli Soda Fountain & Chocolate Shop", type: "Postres / chocolate", category: "Postre", price: "$8–15", tier: 1, location: "San Fransokyo Square", description: "Sundaes de hot fudge, malteadas y chocolate caliente premium.", yelp: "https://www.yelp.com/biz/ghirardelli-soda-fountain-and-chocolate-shop-anaheim" },
   ],
   suggestedRoute: [
     { time: "13:45", title: "Llegada (park hop) + Radiator Springs Racers", note: "La fila más larga de DCA — entra de una o saca Lightning Lane." },

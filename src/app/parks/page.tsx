@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   Check, Star, Trophy, FerrisWheel, Rocket, Clock, MapPin, Timer, Sparkles,
-  UtensilsCrossed, ListChecks, Map as MapIcon, Route, Radio, ExternalLink, Navigation, ChevronDown, Hourglass,
+  UtensilsCrossed, ListChecks, Map as MapIcon, Route, Radio, ExternalLink, Navigation, Hourglass, Search,
 } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useParkWaits } from "@/hooks/use-park-waits";
@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { PARKS_DATA, ATTRACTION_LABEL, rideKey, yelpSearchUrl, type AttractionType } from "@/lib/parks-data";
+import { PARKS_DATA, ATTRACTION_LABEL, rideKey, type AttractionType, type DiningCategory } from "@/lib/parks-data";
 import type { Ride, Park } from "@/lib/types";
 
 const PARKS: { id: Park; label: string; icon: any }[] = [
@@ -41,9 +41,24 @@ export default function ParksPage() {
   const { data: rides, add, update } = useCollection<Ride>("rides");
   const [park, setPark] = useState<Park>("disneyland");
   const [tab, setTab] = useState("rides");
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [foodSearch, setFoodSearch] = useState("");
+  const [foodCat, setFoodCat] = useState<DiningCategory | "Todas">("Todas");
+  const [foodTier, setFoodTier] = useState<0 | 1 | 2 | 3>(0);
 
   const info = PARKS_DATA[park];
+
+  const foodCategories = useMemo(
+    () => Array.from(new Set(info.dining.map((d) => d.category))) as DiningCategory[],
+    [info],
+  );
+  const filteredDining = useMemo(
+    () => info.dining.filter((d) =>
+      (foodCat === "Todas" || d.category === foodCat) &&
+      (foodTier === 0 || d.tier === foodTier) &&
+      (!foodSearch.trim() || d.name.toLowerCase().includes(foodSearch.toLowerCase()) || d.type.toLowerCase().includes(foodSearch.toLowerCase())),
+    ),
+    [info, foodCat, foodTier, foodSearch],
+  );
   const { data: liveData, isLoading: liveLoading } = useParkWaits(park);
 
   const ridesMap = useMemo(() => {
@@ -234,47 +249,59 @@ export default function ParksPage() {
         </div>
       )}
 
-      {/* COMIDA + MENÚS */}
+      {/* COMIDA — buscar, categorías y precio */}
       {tab === "food" && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {info.dining.map((d) => {
-            const expanded = openMenu === d.name;
-            return (
-              <div key={d.name} className="glass rounded-xl p-4">
-                <button className="flex w-full items-center justify-between gap-3 text-left" onClick={() => setOpenMenu(expanded ? null : d.name)}>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{d.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{d.type}</div>
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={foodSearch}
+              onChange={(e) => setFoodSearch(e.target.value)}
+              placeholder="Buscar restaurante…"
+              className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.03] pl-9 pr-3 text-sm outline-none transition focus:border-electric-500/60 focus:ring-2 focus:ring-electric-500/20"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => setFoodCat("Todas")} className={cn("rounded-full border px-3 py-1 text-xs font-medium transition", foodCat === "Todas" ? "border-electric-500/50 bg-electric-500/15 text-white" : "border-white/10 text-muted-foreground")}>Todas</button>
+            {foodCategories.map((c) => (
+              <button key={c} onClick={() => setFoodCat(c)} className={cn("rounded-full border px-3 py-1 text-xs font-medium transition", foodCat === c ? "border-electric-500/50 bg-electric-500/15 text-white" : "border-white/10 text-muted-foreground")}>{c}</button>
+            ))}
+            <span className="mx-1 self-center text-white/15">|</span>
+            {([0, 1, 2, 3] as const).map((t) => (
+              <button key={t} onClick={() => setFoodTier(t)} className={cn("rounded-full border px-3 py-1 text-xs font-medium transition", foodTier === t ? "border-gold-500/50 bg-gold-500/15 text-gold-300" : "border-white/10 text-muted-foreground")}>
+                {t === 0 ? "Cualquier precio" : "$".repeat(t)}
+              </button>
+            ))}
+          </div>
+
+          {filteredDining.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">Ningún lugar coincide con el filtro.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {filteredDining.map((d) => (
+                <div key={d.name} className="glass rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium">{d.name}</div>
+                      <div className="text-xs text-muted-foreground">{d.type}{d.location ? ` · ${d.location}` : ""}</div>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <Badge variant="gold">{d.price}</Badge>
+                      <span className="text-[10px] text-muted-foreground">{"$".repeat(d.tier)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="gold">{d.price}</Badge>
-                    {d.menu && <ChevronDown className={cn("size-4 text-muted-foreground transition", expanded && "rotate-180")} />}
-                  </div>
-                </button>
-                {expanded && d.menu && (
-                  <div className="mt-3 border-t border-white/10 pt-3">
-                    <ul className="space-y-1.5 text-sm">
-                      {d.menu.map((m) => {
-                        const [item, price] = m.split(" — ");
-                        return (
-                          <li key={m} className="flex items-center justify-between gap-3">
-                            <span className="text-muted-foreground">{item}</span>
-                            <span className="board-font shrink-0 text-gold-400">{price}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <a
-                      href={yelpSearchUrl(d.name, info.city)} target="_blank" rel="noreferrer"
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#d32323]/15 px-2.5 py-1.5 text-xs font-medium text-[#ff6b6b] transition hover:bg-[#d32323]/25"
-                    >
-                      <ExternalLink className="size-3.5" /> Ver fotos, menú y reseñas en Yelp
-                    </a>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {d.description && <p className="mt-2 text-xs text-muted-foreground">{d.description}</p>}
+                  <a
+                    href={d.yelp} target="_blank" rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#d32323]/15 px-2.5 py-1.5 text-xs font-medium text-[#ff6b6b] transition hover:bg-[#d32323]/25"
+                  >
+                    <ExternalLink className="size-3.5" /> Ver fotos y reseñas en Yelp
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

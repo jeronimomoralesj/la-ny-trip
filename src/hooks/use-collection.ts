@@ -24,14 +24,24 @@ function explain(err: any): string {
  * - Firebase configured → real Firestore reads/writes.
  * - Otherwise           → local-first store (localStorage), seeded with the trip.
  */
+/**
+ * Datos de referencia FIJOS del viaje: el plan no cambia por usuario, así que
+ * siempre se leen del seed (no de Firestore). Así cada deploy refleja el último
+ * itinerario/vuelos sin necesidad de re-sembrar Firestore.
+ * El contenido generado por el usuario (gastos, fotos, posts, equipaje, etc.)
+ * SÍ usa Firestore cuando está configurado.
+ */
+const SEED_ONLY = new Set(["timelineEvents", "flights", "locations", "announcements", "users"]);
+
 export function useCollection<T extends { id: string }>(name: string) {
   const qc = useQueryClient();
+  const useFirestore = isFirebaseConfigured && !!db && !SEED_ONLY.has(name);
 
   const query = useQuery<T[]>({
     queryKey: [name],
     queryFn: async () => {
-      if (isFirebaseConfigured && db) {
-        const snap = await getDocs(collection(db, name));
+      if (useFirestore) {
+        const snap = await getDocs(collection(db!, name));
         return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as T[];
       }
       return localStore.list<T>(name);
@@ -42,12 +52,12 @@ export function useCollection<T extends { id: string }>(name: string) {
 
   const add = useMutation({
     mutationFn: async (item: Omit<T, "id"> & { id?: string }) => {
-      if (isFirebaseConfigured && db) {
+      if (useFirestore) {
         if (item.id) {
-          await setDoc(doc(db, name, item.id), item as any);
+          await setDoc(doc(db!, name, item.id), item as any);
           return { ...(item as any), id: item.id } as T;
         }
-        const ref = await addDoc(collection(db, name), item as any);
+        const ref = await addDoc(collection(db!, name), item as any);
         return { ...(item as any), id: ref.id } as T;
       }
       return localStore.add<T>(name, item as any);
@@ -58,8 +68,8 @@ export function useCollection<T extends { id: string }>(name: string) {
 
   const update = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<T> }) => {
-      if (isFirebaseConfigured && db) {
-        await updateDoc(doc(db, name, id), patch as any);
+      if (useFirestore) {
+        await updateDoc(doc(db!, name, id), patch as any);
       } else {
         localStore.update<T>(name, id, patch);
       }
@@ -71,8 +81,8 @@ export function useCollection<T extends { id: string }>(name: string) {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      if (isFirebaseConfigured && db) {
-        await deleteDoc(doc(db, name, id));
+      if (useFirestore) {
+        await deleteDoc(doc(db!, name, id));
       } else {
         localStore.remove(name, id);
       }

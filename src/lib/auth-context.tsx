@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, updateProfile,
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "./firebase";
 import { SEED_USERS } from "./seed-data";
@@ -13,6 +14,7 @@ interface AuthState {
   loading: boolean;
   firebaseMode: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string) => Promise<void>;
   signInAs: (userId: string) => void; // local demo mode
   logout: () => Promise<void>;
 }
@@ -63,6 +65,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   };
 
+  const signUp = async (name: string, email: string, password: string) => {
+    if (isFirebaseConfigured && auth) {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      if (name) await updateProfile(cred.user, { displayName: name });
+      return;
+    }
+    // Local demo: just sign in as a matching seed user if one exists
+    const u = matchUser(email);
+    if (u) {
+      localStorage.setItem(LS_KEY, JSON.stringify(u));
+      setUser(u);
+    } else {
+      throw new Error("Demo mode uses the four preset travelers — sign in instead.");
+    }
+  };
+
   const signInAs = (userId: string) => {
     const u = SEED_USERS.find((x) => x.id === userId);
     if (!u) return;
@@ -77,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, firebaseMode: isFirebaseConfigured, signIn, signInAs, logout }}>
+    <AuthContext.Provider value={{ user, loading, firebaseMode: isFirebaseConfigured, signIn, signUp, signInAs, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// la-ny-viaje — private trip for 4 known travelers.
+// Any authenticated user (the squad) can read/write trip data.
+// Tighten per-collection as needed.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Users: readable by the squad; a user may only write their own doc.
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId;
+    }
+
+    // All shared trip collections — squad-only access.
+    match /{collection}/{docId} {
+      allow read, write: if signedIn();
+    }
+  }
+}

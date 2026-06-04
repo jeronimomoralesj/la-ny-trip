@@ -17,7 +17,7 @@ export interface MapPin {
  * Leaflet touches `window`, so it's imported dynamically inside the effect.
  */
 export function TripMap({
-  pins, routes = [], onSelect, className, initialCenter = [-90, 25], initialZoom = 3,
+  pins, routes = [], onSelect, className, initialCenter = [-90, 25], initialZoom = 3, tiles = "dark",
 }: {
   pins: MapPin[];
   routes?: [number, number][][];
@@ -25,6 +25,7 @@ export function TripMap({
   className?: string;
   initialCenter?: [number, number];
   initialZoom?: number;
+  tiles?: "dark" | "satellite";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -45,11 +46,18 @@ export function TripMap({
         .setView([initialCenter[1], initialCenter[0]], initialZoom);
       mapRef.current = map;
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: "abcd",
-        maxZoom: 19,
-      }).addTo(map);
+      if (tiles === "satellite") {
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+          attribution: "&copy; Esri, Maxar, Earthstar Geographics",
+          maxZoom: 19,
+        }).addTo(map);
+      } else {
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+          subdomains: "abcd",
+          maxZoom: 19,
+        }).addTo(map);
+      }
 
       // Static routes (dashed lines between cities)
       routes.forEach((coords) => {
@@ -87,7 +95,7 @@ export function TripMap({
       pts.push([p.lat, p.lng]);
     });
     if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 });
-    else if (pts.length === 1) map.setView(pts[0], 11);
+    else if (pts.length === 1) map.setView(pts[0], initialZoom);
   }, [pins, ready]);
 
   return <div ref={ref} className={className} style={{ background: "#0c1024" }} />;

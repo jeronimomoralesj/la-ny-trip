@@ -76,6 +76,7 @@ export interface TimelineEvent {
   attachments?: { name: string; url: string }[];
   icon?: string;
   group?: TravelGroup; // which party this event applies to ("all" once together)
+  suggested?: boolean; // true = optional plan suggestion for a free day
 }
 
 // ── Flights ───────────────────────────────────────────────────

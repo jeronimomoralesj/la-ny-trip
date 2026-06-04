@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin, Clock, FileText, Navigation, Plane, Car, Trophy, Heart,
-  Castle, Rocket, PartyPopper, Building2, Vote, Circle, type LucideIcon,
+  Castle, Rocket, PartyPopper, Building2, Vote, Circle, Utensils, Sunset,
+  Waves, Camera, ShoppingBag, Landmark, Ship, Bike, Coffee, Sparkles, type LucideIcon,
 } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useNow } from "@/hooks/use-now";
@@ -19,6 +20,7 @@ import type { TimelineEvent } from "@/lib/types";
 
 const ICONS: Record<string, LucideIcon> = {
   Plane, Car, Trophy, Heart, Castle, Rocket, PartyPopper, Building2, Vote,
+  Utensils, Sunset, Waves, Camera, ShoppingBag, Landmark, Ship, Bike, Coffee,
 };
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {
@@ -105,6 +107,7 @@ export default function TimelinePage() {
                           <div className="flex items-center gap-2">
                             <h3 className="truncate font-semibold">{e.title}</h3>
                             {isLive && <Badge variant="success">En vivo</Badge>}
+                            {e.suggested && <Badge variant="muted"><Sparkles className="size-3" /> Sugerencia</Badge>}
                           </div>
                           <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{e.description}</p>
                         </div>

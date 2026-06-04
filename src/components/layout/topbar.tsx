@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, LogOut, MapPin, Radio } from "lucide-react";
+import Link from "next/link";
+import { Menu, LogOut, LogIn, MapPin, Radio } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNow } from "@/hooks/use-now";
 import { currentPhase } from "@/lib/trip";
@@ -9,7 +10,7 @@ import { Avatar } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const now = useNow();
   const [menuOpen, setMenuOpen] = useState(false);
   const phase = now ? currentPhase(now) : null;
@@ -51,20 +52,34 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="glass absolute right-0 top-12 z-50 w-52 rounded-2xl p-2">
+              <div className="glass absolute right-0 top-12 z-50 w-56 rounded-2xl p-2">
                 <div className="px-3 py-2">
                   <div className="font-medium">{user?.name}</div>
-                  <div className="text-xs text-muted-foreground">{user?.email}</div>
+                  {isGuest ? (
+                    <div className="text-xs text-muted-foreground">Browsing as guest</div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">{user?.email}</div>
+                  )}
                   <div className="mt-1 inline-flex rounded-full bg-electric-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-electric-400">
-                    {user?.role}
+                    {isGuest ? "guest" : user?.role}
                   </div>
                 </div>
-                <button
-                  onClick={() => { setMenuOpen(false); logout(); }}
-                  className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
-                >
-                  <LogOut className="size-4" /> Sign out
-                </button>
+                {isGuest ? (
+                  <Link
+                    href="/expenses"
+                    onClick={() => setMenuOpen(false)}
+                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-electric-400 transition hover:bg-white/5"
+                  >
+                    <LogIn className="size-4" /> Sign in for finance
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => { setMenuOpen(false); logout(); }}
+                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                  >
+                    <LogOut className="size-4" /> Sign out
+                  </button>
+                )}
               </div>
             </>
           )}

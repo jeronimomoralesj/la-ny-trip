@@ -14,6 +14,7 @@ import { Modal } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, EmptyState, SectionTitle } from "@/components/ui/misc";
 import { Tabs } from "@/components/ui/tabs";
+import { FinanceGate } from "@/components/auth/finance-gate";
 import { format, parseISO } from "date-fns";
 import type { Expense, ExpenseCategory } from "@/lib/types";
 
@@ -23,6 +24,14 @@ const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id
 const userColor = (id: string) => SEED_USERS.find((u) => u.id === id)?.avatarColor;
 
 export default function ExpensesPage() {
+  return (
+    <FinanceGate>
+      <ExpensesInner />
+    </FinanceGate>
+  );
+}
+
+function ExpensesInner() {
   const { user } = useAuth();
   const { data: expenses, add, remove } = useCollection<Expense>("expenses");
   const [open, setOpen] = useState(false);

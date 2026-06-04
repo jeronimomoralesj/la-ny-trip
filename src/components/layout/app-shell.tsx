@@ -4,12 +4,11 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plane } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { Login } from "@/components/auth/login";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   if (loading) {
@@ -24,8 +23,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  if (!user) return <Login />;
 
   return (
     <div className="flex min-h-screen">

@@ -12,6 +12,7 @@ import { formatUSD } from "@/lib/utils";
 import { ExchangeWidget } from "@/components/widgets/exchange-widget";
 import { Stat, SectionTitle, Avatar } from "@/components/ui/misc";
 import { Card } from "@/components/ui/card";
+import { FinanceGate } from "@/components/auth/finance-gate";
 import type { Expense } from "@/lib/types";
 
 const COLORS = ["#3b82f6", "#f5c451", "#22d3ee", "#a78bfa", "#22c55e", "#f97316", "#ec4899", "#14b8a6", "#eab308", "#94a3b8"];
@@ -19,6 +20,14 @@ const USER_IDS = SEED_USERS.map((u) => u.id);
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
 
 export default function FinancePage() {
+  return (
+    <FinanceGate>
+      <FinanceInner />
+    </FinanceGate>
+  );
+}
+
+function FinanceInner() {
   const { data: expenses } = useCollection<Expense>("expenses");
 
   const total = expenses.reduce((s, e) => s + e.amount, 0);

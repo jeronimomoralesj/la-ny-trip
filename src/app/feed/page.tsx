@@ -7,7 +7,7 @@ import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { compressImageToBase64 } from "@/hooks/use-upload";
 import { notify } from "@/components/ui/toast";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, resolveTravelerId } from "@/lib/seed-data";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { SectionTitle, Avatar } from "@/components/ui/misc";
@@ -34,7 +34,7 @@ export default function FeedPage() {
     try {
       const imageUrl = image ? await compressImageToBase64(image) : undefined;
       await add.mutateAsync({
-        authorId: me?.id ?? "jeronimo", body: body.trim(), createdAt: new Date().toISOString(),
+        authorId: resolveTravelerId(me?.id), body: body.trim(), createdAt: new Date().toISOString(),
         reactions: {}, ...(imageUrl ? { imageUrl } : {}),
       } as Omit<FeedPost, "id">);
       setBody(""); setImage(null);
@@ -45,10 +45,11 @@ export default function FeedPage() {
     }
   };
 
+  const myId = resolveTravelerId(me?.id);
   const react = (p: FeedPost, emoji: string) => {
     const reactions = { ...(p.reactions ?? {}) };
     const list = new Set(reactions[emoji] ?? []);
-    list.has(me!.id) ? list.delete(me!.id) : list.add(me!.id);
+    list.has(myId) ? list.delete(myId) : list.add(myId);
     reactions[emoji] = Array.from(list);
     update.mutate({ id: p.id, patch: { reactions } });
   };
@@ -97,7 +98,7 @@ export default function FeedPage() {
                 <div className="mt-3 flex items-center gap-1.5">
                   {REACTIONS.map((emoji) => {
                     const count = p.reactions?.[emoji]?.length ?? 0;
-                    const mine = p.reactions?.[emoji]?.includes(me?.id ?? "");
+                    const mine = p.reactions?.[emoji]?.includes(myId);
                     return (
                       <button
                         key={emoji}

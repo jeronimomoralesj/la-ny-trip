@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Plus, Star, MapPin, UtensilsCrossed, Wine, Coffee, Cookie, Map as MapIcon, List } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, resolveTravelerId } from "@/lib/seed-data";
 import { TripMap, type MapPin as Pin } from "@/components/map/trip-map";
 import { Modal } from "@/components/ui/drawer";
 import { Input, Select, Textarea } from "@/components/ui/input";
@@ -87,7 +87,7 @@ export default function FoodPage() {
         </div>
       )}
 
-      <LogFood open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutate(e)} loggedBy={user?.id ?? "jeronimo"} />
+      <LogFood open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutate(e)} loggedBy={resolveTravelerId(user?.id)} />
     </div>
   );
 }

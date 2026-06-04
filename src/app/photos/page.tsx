@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { SectionTitle, Avatar } from "@/components/ui/misc";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, resolveTravelerId } from "@/lib/seed-data";
 import { parseISO } from "date-fns";
 import { fmt } from "@/lib/utils";
 import type { Photo } from "@/lib/types";
@@ -67,7 +67,7 @@ export default function PhotosPage() {
     try {
       const url = await compressImageToBase64(pendingFile);
       await add.mutateAsync({
-        url, uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(),
+        url, uploaderId: resolveTravelerId(user?.id), uploadedAt: new Date().toISOString(),
         title: title.trim() || "Foto", city: city.trim(),
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         ...(loc ? { lat: loc.lat, lng: loc.lng } : {}),

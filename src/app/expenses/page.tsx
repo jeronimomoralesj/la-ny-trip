@@ -5,7 +5,7 @@ import { Plus, Users, User, Trash2, Receipt } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, resolveTravelerId } from "@/lib/seed-data";
 import { computeBalances, computeSettlements } from "@/lib/trip";
 import { formatUSD, cn, fmt } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -135,7 +135,7 @@ function ExpensesInner() {
         <EmptyState icon={Receipt} title="Aún no hay gastos" hint="Agrega el primero para empezar a calcular quién le debe a quién." />
       )}
 
-      <AddExpense open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutateAsync(e)} defaultPayer={user?.id ?? "jeronimo"} />
+      <AddExpense open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutateAsync(e)} defaultPayer={resolveTravelerId(user?.id)} />
     </div>
   );
 }

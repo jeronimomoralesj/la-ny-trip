@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Vote, Check, Plus, Trash2, CalendarClock, FileText, Flag, Users } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { SEED_USERS, ELECTION_DAY } from "@/lib/seed-data";
+import { SEED_USERS, ELECTION_DAY, resolveTravelerId } from "@/lib/seed-data";
 import { Countdown } from "@/components/widgets/countdown";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -171,7 +171,7 @@ export default function ElectionsPage() {
             </div>
             <div className="mt-3 flex gap-2">
               <Textarea placeholder="Agregar una nota para el grupo…" value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[44px]" />
-              <Button onClick={() => { if (note.trim()) { addNote.mutate({ body: note.trim(), authorId: user?.id ?? "jeronimo", createdAt: new Date().toISOString() } as Omit<ElectionNote, "id">); setNote(""); } }}>
+              <Button onClick={() => { if (note.trim()) { addNote.mutate({ body: note.trim(), authorId: resolveTravelerId(user?.id), createdAt: new Date().toISOString() } as Omit<ElectionNote, "id">); setNote(""); } }}>
                 <Plus className="size-4" />
               </Button>
             </div>

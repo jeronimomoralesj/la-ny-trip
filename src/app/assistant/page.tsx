@@ -7,6 +7,7 @@ import { useCollection } from "@/hooks/use-collection";
 import { useWeather } from "@/hooks/use-weather";
 import { useAuth } from "@/lib/auth-context";
 import { answer, SUGGESTED, type AssistantContext } from "@/lib/assistant";
+import { resolveTravelerId } from "@/lib/seed-data";
 import { SectionTitle } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,7 @@ export default function AssistantPage() {
   const send = (text: string) => {
     if (!text.trim()) return;
     const ctx: AssistantContext = {
-      now: Date.now(), events, expenses, flights, photos, weather: weather ?? [], userId: user?.id ?? "jeronimo",
+      now: Date.now(), events, expenses, flights, photos, weather: weather ?? [], userId: resolveTravelerId(user?.id),
     };
     const reply = answer(text, ctx);
     setMessages((m) => [...m, { role: "user", text }, { role: "assistant", text: reply }]);

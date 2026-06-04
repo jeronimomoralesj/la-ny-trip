@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { notify } from "@/components/ui/toast";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, resolveTravelerId } from "@/lib/seed-data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress, SectionTitle, Avatar } from "@/components/ui/misc";
+import { SectionTitle, Avatar } from "@/components/ui/misc";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { ChecklistItem } from "@/lib/types";
@@ -20,8 +20,8 @@ const bagKey = (i: ChecklistItem) => i.bag || i.category || "General";
 
 export default function PackingPage() {
   const { user } = useAuth();
-  const { data: items, add, update, remove } = useCollection<ChecklistItem>("checklists");
-  const [owner, setOwner] = useState(user?.id ?? "jeronimo");
+  const { data: items, add, remove } = useCollection<ChecklistItem>("checklists");
+  const [owner, setOwner] = useState(resolveTravelerId(user?.id));
   const [label, setLabel] = useState("");
   const [rfid, setRfid] = useState("");
   const [activeBag, setActiveBag] = useState(DEFAULT_BAGS[0]);
@@ -36,8 +36,6 @@ export default function PackingPage() {
   }, [owner]);
 
   const mine = items.filter((i) => i.ownerId === owner);
-  const done = mine.filter((i) => i.checked).length;
-  const pct = mine.length ? (done / mine.length) * 100 : 0;
 
   const bags = useMemo(() => {
     const fromItems = mine.map(bagKey);
@@ -53,7 +51,7 @@ export default function PackingPage() {
 
   const addItem = () => {
     if (!label.trim()) return;
-    add.mutate({ ownerId: owner, label: label.trim(), checked: false, bag: activeBag, ...(rfid ? { rfid } : {}) } as Omit<ChecklistItem, "id">);
+    add.mutate({ ownerId: owner, label: label.trim(), checked: true, bag: activeBag, ...(rfid ? { rfid } : {}) } as Omit<ChecklistItem, "id">);
     setLabel(""); setRfid("");
   };
 
@@ -97,13 +95,13 @@ export default function PackingPage() {
         <div className="flex items-center gap-4">
           <Avatar name={SEED_USERS.find((u) => u.id === owner)?.name ?? ""} color={SEED_USERS.find((u) => u.id === owner)?.avatarColor} size={48} />
           <div className="flex-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Equipaje de {SEED_USERS.find((u) => u.id === owner)?.name}</span>
-              <span className="text-muted-foreground">{done}/{mine.length} empacado · {bags.length} bolsos</span>
-            </div>
-            <Progress value={pct} className="mt-2 h-2.5" />
+            <div className="font-medium">Equipaje de {SEED_USERS.find((u) => u.id === owner)?.name}</div>
+            <div className="text-sm text-muted-foreground">Registro de lo empacado — agrega lo que metas a la maleta.</div>
           </div>
-          <div className="board-font text-2xl font-bold text-gold-400">{Math.round(pct)}%</div>
+          <div className="text-right">
+            <div className="board-font text-2xl font-bold text-gold-400">{mine.length}</div>
+            <div className="text-[11px] text-muted-foreground">{bags.length} bolsos</div>
+          </div>
         </div>
       </div>
 
@@ -142,23 +140,19 @@ export default function PackingPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         {grouped.map(([bag, list]) => {
           const Icon = bagIcon(bag);
-          const bagDone = list.filter((i) => i.checked).length;
           return (
             <div key={bag} className="glass rounded-2xl p-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-semibold text-electric-400"><Icon className="size-4" /> {bag}</div>
-                <span className="text-xs text-muted-foreground">{bagDone}/{list.length}</span>
+                <span className="text-xs text-muted-foreground">{list.length} {list.length === 1 ? "artículo" : "artículos"}</span>
               </div>
               <div className="space-y-1">
                 {list.map((it) => (
                   <motion.div key={it.id} layout className="group flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.03]">
-                    <button
-                      onClick={() => update.mutate({ id: it.id, patch: { checked: !it.checked } })}
-                      className={cn("grid size-5 shrink-0 place-items-center rounded-md border transition", it.checked ? "border-emerald-500 bg-emerald-500 text-navy-950" : "border-white/20")}
-                    >
-                      {it.checked && <Check className="size-3.5" strokeWidth={3} />}
-                    </button>
-                    <span className={cn("flex-1 text-sm", it.checked && "text-muted-foreground line-through")}>{it.label}</span>
+                    <span className="grid size-5 shrink-0 place-items-center rounded-md bg-emerald-500 text-navy-950">
+                      <Check className="size-3.5" strokeWidth={3} />
+                    </span>
+                    <span className="flex-1 text-sm">{it.label}</span>
                     {it.rfid && <Badge variant="cyan"><Nfc className="size-3" /> {it.rfid.slice(0, 10)}</Badge>}
                     <button onClick={() => remove.mutate(it.id)} className="opacity-0 transition group-hover:opacity-100">
                       <Trash2 className="size-3.5 text-muted-foreground hover:text-red-400" />

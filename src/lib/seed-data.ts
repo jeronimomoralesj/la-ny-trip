@@ -25,6 +25,15 @@ import type {
 //  Desde LA, todos juntos: LA → Nueva York → regreso a casa.
 // ──────────────────────────────────────────────────────────────
 
+/**
+ * El viaje es de 4 personas fijas. Si alguien inicia sesión con un correo que
+ * no es de los 4, su id sería el UID de Firebase y la atribución (gastos,
+ * fotos, etc.) no cuadraría con los filtros. Esto siempre resuelve a un viajero.
+ */
+export function resolveTravelerId(id?: string | null): string {
+  return SEED_USERS.some((u) => u.id === id) ? (id as string) : "jeronimo";
+}
+
 export const SEED_USERS: AppUser[] = [
   { id: "jeronimo", name: "Jeronimo", email: "jeronimo@lanyviaje.com", role: "admin", avatarColor: "#3b82f6", initials: "JE", group: "bogota" },
   { id: "juan", name: "Juan", email: "juan@lanyviaje.com", role: "member", avatarColor: "#22d3ee", initials: "JU", group: "bogota" },

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { PARKS_DATA, ATTRACTION_LABEL, rideKey, type AttractionType, type DiningCategory } from "@/lib/parks-data";
+import { resolveTravelerId } from "@/lib/seed-data";
 import type { Ride, Park } from "@/lib/types";
 
 const PARKS: { id: Park; label: string; icon: any }[] = [
@@ -107,7 +108,8 @@ export default function ParksPage() {
     const existing = ridesMap.get(d.key);
     const completedBy = new Set(existing?.completedBy ?? []);
     const willComplete = !existing?.completed;
-    if (user) willComplete ? completedBy.add(user.id) : completedBy.delete(user.id);
+    const meId = resolveTravelerId(user?.id);
+    willComplete ? completedBy.add(meId) : completedBy.delete(meId);
     if (existing) update.mutate({ id: d.key, patch: { completed: willComplete, completedBy: Array.from(completedBy) } });
     else add.mutate({ id: d.key, park, name: d.name, completed: true, completedBy: Array.from(completedBy) } as any);
   };

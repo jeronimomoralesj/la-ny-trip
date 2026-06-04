@@ -98,18 +98,18 @@ export default function TimelinePage() {
                     </div>
 
                     <div className={cn(
-                      "glass glass-hover flex-1 rounded-2xl p-4",
+                      "glass glass-hover min-w-0 flex-1 rounded-2xl p-4",
                       isLive && "glow-blue",
                       isPast && "opacity-60",
                     )}>
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="truncate font-semibold">{e.title}</h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <h3 className="min-w-0 truncate font-semibold">{e.title}</h3>
                             {isLive && <Badge variant="success">En vivo</Badge>}
                             {e.suggested && <Badge variant="muted"><Sparkles className="size-3" /> Sugerencia</Badge>}
                           </div>
-                          <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{e.description}</p>
+                          <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{e.description}</p>
                         </div>
                         <div className="board-font shrink-0 text-right text-xs text-muted-foreground">
                           <div className="flex items-center gap-1"><Clock className="size-3" />{fmt(parseISO(e.start), "h:mm a")}</div>

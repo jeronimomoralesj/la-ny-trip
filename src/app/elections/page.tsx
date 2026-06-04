@@ -16,8 +16,8 @@ import { parseISO } from "date-fns";
 import type { ElectionTask, ElectionNote } from "@/lib/types";
 
 const KEY_DATES = [
-  { date: "2026-06-20", label: "Vuelo nocturno", detail: "JFK → BOG de noche" },
-  { date: "2026-06-21", label: "Día de elecciones", detail: "Aterriza 06:30, urnas abren 08:00" },
+  { date: "2026-06-21", label: "Vuelo de regreso", detail: "JFK → BOG · sale 7:35 am" },
+  { date: "2026-06-21", label: "Aterrizar en El Dorado", detail: "Llega 12:25 pm — directo a votar" },
   { date: "2026-06-21", label: "Cierre de urnas", detail: "Votar antes de las 16:00" },
 ];
 

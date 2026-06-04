@@ -115,7 +115,7 @@ export default function ParksPage() {
       <div className="flex items-start gap-3 rounded-2xl border border-pink-500/30 bg-pink-500/10 p-4 text-sm">
         <Route className="mt-0.5 size-4 shrink-0 text-pink-400" />
         <p className="text-pink-100">
-          <strong>Park hop (11 jun):</strong> empezamos en <strong>Disneyland Park</strong> con la apertura (rope drop) y a la 1:30 pm cruzamos a <strong>Disney California Adventure</strong> (están uno frente al otro). <strong>Six Flags es otro día (12 jun)</strong>. Mira la pestaña <strong>Ruta</strong> en cada parque para el orden más eficiente.
+          <strong>Park hop (16 jun):</strong> empezamos en <strong>Disneyland Park</strong> con la apertura (rope drop) y a la 1:30 pm cruzamos a <strong>Disney California Adventure</strong> (están uno frente al otro). <strong>Six Flags es otro día (14 jun)</strong>. Mira la pestaña <strong>Ruta</strong> en cada parque para el orden más eficiente.
         </p>
       </div>
 

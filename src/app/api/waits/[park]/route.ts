@@ -7,12 +7,14 @@ export const revalidate = 120; // cache 2 min
 
 const PARK_NAMES: Record<string, string> = {
   disneyland: "Disneyland Park",
+  "disney-california-adventure": "Disney California Adventure",
   "six-flags": "Six Flags Magic Mountain",
 };
 
 // IDs conocidos como respaldo si la búsqueda por nombre falla.
 const FALLBACK_ID: Record<string, number> = {
   disneyland: 16,
+  "disney-california-adventure": 17,
   "six-flags": 30,
 };
 

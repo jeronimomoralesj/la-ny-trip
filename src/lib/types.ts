@@ -176,7 +176,7 @@ export interface ChecklistItem {
 }
 
 // ── Theme parks ───────────────────────────────────────────────
-export type Park = "disneyland" | "six-flags";
+export type Park = "disneyland" | "disney-california-adventure" | "six-flags";
 
 export interface Ride {
   id: string;

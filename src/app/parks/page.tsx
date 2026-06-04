@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import {
-  Check, Star, Trophy, FerrisWheel, Rocket, Clock, MapPin, Timer,
-  UtensilsCrossed, ListChecks, Map as MapIcon, Route, Radio, ExternalLink, Navigation, ChevronDown,
+  Check, Star, Trophy, FerrisWheel, Rocket, Clock, MapPin, Timer, Sparkles,
+  UtensilsCrossed, ListChecks, Map as MapIcon, Route, Radio, ExternalLink, Navigation, ChevronDown, Hourglass,
 } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useParkWaits } from "@/hooks/use-park-waits";
@@ -14,11 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { PARKS_DATA, ATTRACTION_LABEL, rideKey, type AttractionType } from "@/lib/parks-data";
+import { PARKS_DATA, ATTRACTION_LABEL, rideKey, yelpSearchUrl, type AttractionType } from "@/lib/parks-data";
 import type { Ride, Park } from "@/lib/types";
 
 const PARKS: { id: Park; label: string; icon: any }[] = [
   { id: "disneyland", label: "Disneyland", icon: FerrisWheel },
+  { id: "disney-california-adventure", label: "California Adv.", icon: Sparkles },
   { id: "six-flags", label: "Six Flags", icon: Rocket },
 ];
 
@@ -114,7 +115,7 @@ export default function ParksPage() {
       <div className="flex items-start gap-3 rounded-2xl border border-pink-500/30 bg-pink-500/10 p-4 text-sm">
         <Route className="mt-0.5 size-4 shrink-0 text-pink-400" />
         <p className="text-pink-100">
-          <strong>Park hopping (11 jun):</strong> empezamos en <strong>Disneyland</strong> con la apertura (rope drop) y a la 1:30 pm salimos a <strong>Six Flags Magic Mountain</strong> (~1h15). Mira la pestaña <strong>Ruta</strong> en cada parque para el orden más eficiente.
+          <strong>Park hop (11 jun):</strong> empezamos en <strong>Disneyland Park</strong> con la apertura (rope drop) y a la 1:30 pm cruzamos a <strong>Disney California Adventure</strong> (están uno frente al otro). <strong>Six Flags es otro día (12 jun)</strong>. Mira la pestaña <strong>Ruta</strong> en cada parque para el orden más eficiente.
         </p>
       </div>
 
@@ -251,17 +252,25 @@ export default function ParksPage() {
                   </div>
                 </button>
                 {expanded && d.menu && (
-                  <ul className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-sm">
-                    {d.menu.map((m) => {
-                      const [item, price] = m.split(" — ");
-                      return (
-                        <li key={m} className="flex items-center justify-between gap-3">
-                          <span className="text-muted-foreground">{item}</span>
-                          <span className="board-font shrink-0 text-gold-400">{price}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <div className="mt-3 border-t border-white/10 pt-3">
+                    <ul className="space-y-1.5 text-sm">
+                      {d.menu.map((m) => {
+                        const [item, price] = m.split(" — ");
+                        return (
+                          <li key={m} className="flex items-center justify-between gap-3">
+                            <span className="text-muted-foreground">{item}</span>
+                            <span className="board-font shrink-0 text-gold-400">{price}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <a
+                      href={yelpSearchUrl(d.name, info.city)} target="_blank" rel="noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#d32323]/15 px-2.5 py-1.5 text-xs font-medium text-[#ff6b6b] transition hover:bg-[#d32323]/25"
+                    >
+                      <ExternalLink className="size-3.5" /> Ver fotos, menú y reseñas en Yelp
+                    </a>
+                  </div>
                 )}
               </div>
             );
@@ -269,28 +278,30 @@ export default function ParksPage() {
         </div>
       )}
 
-      {/* MAPA (satélite real del parque) */}
+      {/* MAPA */}
       {tab === "map" && (
         <div className="space-y-3">
           <div className="overflow-hidden rounded-2xl border border-white/10">
             <TripMap
-              tiles="satellite"
-              pins={[{ id: info.id, lng: info.lng, lat: info.lat, title: info.name, subtitle: "Vista aérea", color: info.accent }]}
+              pins={[{ id: info.id, lng: info.lng, lat: info.lat, title: info.name, subtitle: info.city, color: info.accent }]}
               initialCenter={[info.lng, info.lat]}
-              initialZoom={16}
-              className="h-[58vh] w-full"
+              initialZoom={15}
+              className="h-[52vh] w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="gold" className="flex-1" onClick={() => window.open(info.officialMapUrl, "_blank")}>
-              <ExternalLink className="size-4" /> Mapa interactivo oficial
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Button variant="gold" onClick={() => window.open(info.officialMapUrl, "_blank")}>
+              <ExternalLink className="size-4" /> Mapa oficial
             </Button>
-            <Button variant="glass" className="flex-1" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${info.lat},${info.lng}`, "_blank")}>
+            <Button variant="glass" onClick={() => window.open(info.realtimeQueueUrl, "_blank")}>
+              <Hourglass className="size-4" /> Filas en tiempo real
+            </Button>
+            <Button variant="glass" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${info.lat},${info.lng}`, "_blank")}>
               <Navigation className="size-4" /> Cómo llegar
             </Button>
           </div>
           <p className="text-center text-xs text-muted-foreground/60">
-            Vista satelital del parque. El mapa oficial muestra todas las atracciones, baños, tiendas y restaurantes con detalle.
+            El <strong>mapa oficial</strong> muestra todas las atracciones con etiquetas, baños, tiendas y restaurantes. <strong>Filas en tiempo real</strong> abre las esperas en vivo de cada atracción.
           </p>
         </div>
       )}

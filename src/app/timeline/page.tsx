@@ -20,7 +20,7 @@ import type { TimelineEvent } from "@/lib/types";
 
 const ICONS: Record<string, LucideIcon> = {
   Plane, Car, Trophy, Heart, Castle, Rocket, PartyPopper, Building2, Vote,
-  Utensils, Sunset, Waves, Camera, ShoppingBag, Landmark, Ship, Bike, Coffee,
+  Utensils, Sunset, Waves, Camera, ShoppingBag, Landmark, Ship, Bike, Coffee, Sparkles,
 };
 
 function DynIcon({ name, className }: { name?: string; className?: string }) {

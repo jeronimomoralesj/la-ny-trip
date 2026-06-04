@@ -235,6 +235,15 @@ export interface ElectionTask {
   done: boolean;
 }
 
+// ── Vaccines ──────────────────────────────────────────────────
+export interface Vaccine {
+  id: string;
+  ownerId: string;
+  name: string;     // p. ej. "Fiebre amarilla"
+  date?: string;    // fecha de aplicación (ISO yyyy-MM-dd)
+  notes?: string;
+}
+
 // ── Group announcements ───────────────────────────────────────
 export interface Announcement {
   id: string;

@@ -15,6 +15,7 @@ import type {
   ElectionNote,
   ElectionTask,
   Announcement,
+  Vaccine,
 } from "./types";
 
 // ──────────────────────────────────────────────────────────────
@@ -134,7 +135,6 @@ export const SEED_TIMELINE: TimelineEvent[] = [
 
   // ── 21 jun · Regreso + VOTAR ────────────────────────────────
   { id: "d21-1", group: "bogota", day: "2026-06-21", city: "Nueva York", phase: "return-to-colombia", title: "Vuelo JFK → BOG (JetBlue)", description: "Vuelo de regreso a casa. Sale 7:35 am, llega a El Dorado 12:25 pm (reserva C2SOME).", start: "2026-06-21T07:35:00-04:00", end: "2026-06-21T12:25:00-05:00", locationId: "jfk", lng: loc("jfk").lng, lat: loc("jfk").lat, icon: "Plane" },
-  { id: "d21-2", group: "boston", day: "2026-06-21", city: "Nueva York", phase: "return-to-colombia", title: "Vuelo JFK → BOS", description: "Mateo y Valeria regresan a Boston.", start: "2026-06-21T08:00:00-04:00", end: "2026-06-21T09:25:00-04:00", locationId: "jfk", lng: loc("jfk").lng, lat: loc("jfk").lat, icon: "Plane" },
   { id: "d21-3", group: "bogota", day: "2026-06-21", city: "Bogotá", phase: "election-day", title: "Aterrizar + VOTAR", description: "Directo de El Dorado al puesto de votación antes del cierre (4 pm).", start: "2026-06-21T12:25:00-05:00", end: "2026-06-21T16:00:00-05:00", locationId: "bog", lng: loc("bog").lng, lat: loc("bog").lat, notes: "Llevar la cédula. Verificar el puesto la noche anterior.", icon: "Vote" },
 ];
 
@@ -143,8 +143,7 @@ export const SEED_FLIGHTS: Flight[] = [
   { id: "f-a2", group: "bogota", airline: "Copa Airlines", flightNumber: "CM 0382", from: { code: "PTY", city: "Panamá", lng: -79.3835, lat: 9.0714 }, to: { code: "LAX", city: "Los Ángeles", lng: -118.4085, lat: 33.9416 }, departure: "2026-06-12T18:10:00-05:00", arrival: "2026-06-12T23:05:00-07:00", terminal: "Intl", gate: "24", seat: "18A · 18C", status: "scheduled", confirmation: "ADUTDZ" },
   { id: "f-b1", group: "boston", airline: "JetBlue", flightNumber: "B6 0987", from: { code: "BOS", city: "Boston", lng: -71.0096, lat: 42.3656 }, to: { code: "LAX", city: "Los Ángeles", lng: -118.4085, lat: 33.9416 }, departure: "2026-06-12T20:30:00-04:00", arrival: "2026-06-12T23:55:00-07:00", terminal: "C", gate: "C30", seat: "9A · 9B", status: "scheduled", confirmation: "B6TRP1" },
   { id: "f2", group: "all", airline: "JetBlue", flightNumber: "B6 524", from: { code: "LAX", city: "Los Ángeles", lng: -118.4085, lat: 33.9416 }, to: { code: "JFK", city: "Nueva York", lng: -73.7781, lat: 40.6413 }, departure: "2026-06-17T07:25:00-07:00", arrival: "2026-06-17T16:05:00-04:00", terminal: "5", gate: "C34", seat: "14A–14D", status: "scheduled", confirmation: "KMXMWW" },
-  { id: "f3", group: "bogota", airline: "JetBlue", flightNumber: "B6 1273", from: { code: "JFK", city: "Nueva York", lng: -73.7781, lat: 40.6413 }, to: { code: "BOG", city: "Bogotá", lng: -74.1469, lat: 4.7016 }, departure: "2026-06-21T07:35:00-04:00", arrival: "2026-06-21T12:25:00-05:00", terminal: "5", gate: "B22", seat: "30A · 30C", status: "scheduled", confirmation: "C2SOME" },
-  { id: "f4", group: "boston", airline: "JetBlue", flightNumber: "B6 1122", from: { code: "JFK", city: "Nueva York", lng: -73.7781, lat: 40.6413 }, to: { code: "BOS", city: "Boston", lng: -71.0096, lat: 42.3656 }, departure: "2026-06-21T08:00:00-04:00", arrival: "2026-06-21T09:25:00-04:00", terminal: "5", gate: "26", seat: "11A · 11B", status: "scheduled", confirmation: "B6BOS4" },
+  { id: "f3", group: "bogota", airline: "Avianca", flightNumber: "AV 245", from: { code: "JFK", city: "Nueva York", lng: -73.7781, lat: 40.6413 }, to: { code: "BOG", city: "Bogotá", lng: -74.1469, lat: 4.7016 }, departure: "2026-06-21T07:35:00-04:00", arrival: "2026-06-21T12:25:00-05:00", terminal: "4", gate: "B22", seat: "30A · 30C", status: "scheduled", confirmation: "C2SOME" },
 ];
 
 export const SEED_EXPENSES: Expense[] = [
@@ -272,6 +271,12 @@ export const SEED_WEATHER: WeatherSnapshot[] = [
     alerts: [{ title: "Se espera lluvia ligera", description: "Probables chubascos el 15 de junio en la tarde — lleva un paraguas compacto." }],
     recommendations: ["Lluvia el 15 jun — lleva paraguas", "Chaqueta liviana para la noche", "Zapatos cómodos para caminar"],
   },
+];
+
+export const SEED_VACCINES: Vaccine[] = [
+  { id: "v1", ownerId: "jeronimo", name: "Fiebre amarilla", date: "2026-05-10", notes: "Certificado en el equipaje de mano." },
+  { id: "v2", ownerId: "jeronimo", name: "Influenza (anual)", date: "2026-05-10" },
+  { id: "v3", ownerId: "juan", name: "Fiebre amarilla", date: "2026-05-12" },
 ];
 
 export const SEED_ELECTION_NOTES: ElectionNote[] = [

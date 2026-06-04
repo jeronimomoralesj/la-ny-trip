@@ -103,5 +103,7 @@ export function TripMap({
     else if (pts.length === 1) map.setView(pts[0], initialZoom);
   }, [pins, ready]);
 
-  return <div ref={ref} className={className} style={{ background: "#0c1024" }} />;
+  // `isolation: isolate` + zIndex:0 mantienen los z-index internos de Leaflet
+  // (panes/controles ~400–1000) DENTRO del mapa, para que no tapen drawers/popups.
+  return <div ref={ref} className={className} style={{ background: "#0c1024", position: "relative", zIndex: 0, isolation: "isolate" }} />;
 }

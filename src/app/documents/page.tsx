@@ -85,7 +85,7 @@ export default function DocumentsPage() {
         eyebrow="Operaciones"
         title="Baúl de Documentos"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <Select value={newFolder} onChange={(e) => setNewFolder(e.target.value)} className="h-9 w-32">
               {folders.filter((f) => f !== "Todos").map((f) => <option key={f}>{f}</option>)}
             </Select>

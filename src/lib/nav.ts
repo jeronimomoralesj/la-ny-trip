@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, CalendarRange, Map, Images, FolderLock, Wallet,
   LineChart, CloudSun, Plane, MessagesSquare, CheckSquare, FerrisWheel,
-  Trophy, UtensilsCrossed, Bot, Vote, type LucideIcon,
+  Trophy, UtensilsCrossed, Bot, Vote, Syringe, type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {
@@ -19,6 +19,7 @@ export const NAV: NavItem[] = [
   { href: "/weather", label: "Clima", icon: CloudSun, group: "Operaciones" },
   { href: "/documents", label: "Documentos", icon: FolderLock, group: "Operaciones" },
   { href: "/packing", label: "Equipaje", icon: CheckSquare, group: "Operaciones" },
+  { href: "/vaccines", label: "Vacunas", icon: Syringe, group: "Operaciones" },
   { href: "/expenses", label: "Gastos", icon: Wallet, group: "Finanzas" },
   { href: "/finance", label: "Centro Financiero", icon: LineChart, group: "Finanzas" },
   { href: "/photos", label: "Baúl de Fotos", icon: Images, group: "Escuadrón" },

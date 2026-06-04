@@ -12,7 +12,7 @@ export function Tabs({
   className?: string;
 }) {
   return (
-    <div className={cn("inline-flex items-center gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1", className)}>
+    <div className={cn("inline-flex max-w-full items-center gap-1 overflow-x-auto no-scrollbar rounded-2xl border border-white/10 bg-white/[0.03] p-1", className)}>
       {tabs.map((t) => {
         const active = t.id === value;
         const Icon = t.icon;
@@ -21,7 +21,7 @@ export function Tabs({
             key={t.id}
             onClick={() => onChange(t.id)}
             className={cn(
-              "relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium transition-colors",
+              "relative flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium transition-colors",
               active ? "text-white" : "text-muted-foreground hover:text-foreground",
             )}
           >

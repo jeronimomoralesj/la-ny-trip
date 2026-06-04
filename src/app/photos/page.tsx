@@ -93,7 +93,7 @@ export default function PhotosPage() {
         eyebrow="Recuerdos"
         title="Baúl de Fotos"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <Tabs value={view} onChange={setView} tabs={[{ id: "gallery", label: "Galería", icon: Grid3x3 }, { id: "map", label: "Mapa", icon: MapIcon }, { id: "timeline", label: "Línea", icon: Calendar }]} />
             <Button variant="gold" onClick={() => fileRef.current?.click()}>
               <Upload className="size-4" /> Subir

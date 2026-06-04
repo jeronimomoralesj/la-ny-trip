@@ -40,7 +40,7 @@ export default function FoodPage() {
         eyebrow="Escuadrón"
         title="Diario Gastronómico"
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:justify-end">
             <Tabs value={view} onChange={setView} tabs={[{ id: "list", label: "Lista", icon: List }, { id: "map", label: "Mapa", icon: MapIcon }]} />
             <Button variant="gold" onClick={() => setOpen(true)}><Plus className="size-4" /> Registrar</Button>
           </div>

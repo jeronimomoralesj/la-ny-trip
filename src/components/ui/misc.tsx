@@ -45,7 +45,7 @@ export function SectionTitle({
   eyebrow, title, action,
 }: { eyebrow?: string; title: string; action?: React.ReactNode }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div>
         {eyebrow && (
           <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-electric-400/80">
@@ -54,7 +54,7 @@ export function SectionTitle({
         )}
         <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>
       </div>
-      {action}
+      {action && <div className="min-w-0 max-w-full">{action}</div>}
     </div>
   );
 }

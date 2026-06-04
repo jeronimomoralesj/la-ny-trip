@@ -37,7 +37,7 @@ export function ExchangeWidget({ withChart = true }: { withChart?: boolean }) {
             <div className="text-sm font-semibold">USD → COP</div>
             <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
               {data?.live ? <Wifi className="size-3 text-emerald-400" /> : <WifiOff className="size-3 text-amber-400" />}
-              {data?.live ? "Live rate" : "Offline estimate"}
+              {data?.live ? "Tasa en vivo" : "Estimado sin conexión"}
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ export function ExchangeWidget({ withChart = true }: { withChart?: boolean }) {
             {isLoading ? "…" : `$${Math.round(rate).toLocaleString()}`}
           </div>
           <div className="flex items-center justify-end gap-1 text-[11px] text-emerald-400">
-            <TrendingUp className="size-3" /> per USD
+            <TrendingUp className="size-3" /> por USD
           </div>
         </div>
       </div>

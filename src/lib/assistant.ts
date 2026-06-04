@@ -1,9 +1,8 @@
-import { format, parseISO } from "date-fns";
-import { nextEvent } from "./trip";
-import { computeBalances, computeSettlements } from "./trip";
+import { parseISO } from "date-fns";
+import { nextEvent, computeBalances, computeSettlements } from "./trip";
 import { SEED_USERS } from "./seed-data";
-import { formatUSD } from "./utils";
-import type { TimelineEvent, Expense, Flight, WeatherSnapshot, Photo } from "./types";
+import { formatUSD, fmt } from "./utils";
+import type { TimelineEvent, Expense, Flight, WeatherSnapshot, Photo, TravelGroup } from "./types";
 
 export interface AssistantContext {
   now: number;
@@ -16,72 +15,79 @@ export interface AssistantContext {
 }
 
 const name = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
+const groupOf = (id: string): TravelGroup => SEED_USERS.find((u) => u.id === id)?.group ?? "bogota";
 
 /**
- * Rule-based intent router. This is a mock "AI" that reads live trip data so
- * answers are real. The interface is future-ready: swap `answer()` for a call
- * to an LLM with the same context object and tool definitions.
+ * Motor de intenciones (mock "IA") que lee los datos reales del viaje.
+ * Arquitectura lista para LLM: reemplaza answer() por una llamada a un modelo
+ * con el mismo objeto de contexto y definiciones de herramientas.
  */
 export function answer(q: string, ctx: AssistantContext): string {
   const t = q.toLowerCase();
+  const group = groupOf(ctx.userId);
 
-  // Next on itinerary
-  if (/(next|upcoming|after this|what.*now|schedule)/.test(t)) {
-    const next = nextEvent(ctx.now, ctx.events);
-    if (!next) return "Nothing left on the itinerary — the trip is complete. Welcome home! 🇨🇴";
-    return `Next up: **${next.title}** in ${next.city}, ${format(parseISO(next.start), "EEEE d MMM 'at' h:mm a")}. ${next.description}`;
+  // Próximo en el itinerario
+  if (/(próxim|proxim|siguiente|sigue|ahora|agenda|itinerar)/.test(t)) {
+    const next = nextEvent(ctx.now, ctx.events, group);
+    if (!next) return "No queda nada en el itinerario — el viaje terminó. ¡Bienvenido a casa! 🇨🇴";
+    return `Lo siguiente: **${next.title}** en ${next.city}, ${fmt(parseISO(next.start), "EEEE d 'de' MMMM 'a las' h:mm a")}. ${next.description}`;
   }
 
-  // Spending
-  if (/(how much.*spent|my spend|total spend|spending|budget)/.test(t)) {
+  // Gastos
+  if (/(cuánto|cuanto).*(gast)|gast(é|e|ado|amos)|presupuesto|plata|dinero/.test(t)) {
     const total = ctx.expenses.reduce((s, e) => s + e.amount, 0);
     const mine = ctx.expenses.filter((e) => e.payerId === ctx.userId).reduce((s, e) => s + e.amount, 0);
-    return `The squad has spent **${formatUSD(total)}** so far. You (${name(ctx.userId)}) have personally paid **${formatUSD(mine)}** of that. That's about ${formatUSD(total / 4)} per person if split evenly.`;
+    return `El grupo ha gastado **${formatUSD(total)}** hasta ahora. Tú (${name(ctx.userId)}) has pagado **${formatUSD(mine)}**. Eso es alrededor de ${formatUSD(total / 4)} por persona si se divide en partes iguales.`;
   }
 
-  // Who owes who
-  if (/(owe|owes|settle|balance|debt)/.test(t)) {
+  // Quién le debe a quién
+  if (/(debe|debo|deuda|saldar|saldo|cuenta)/.test(t)) {
     const balances = computeBalances(ctx.expenses, SEED_USERS.map((u) => u.id));
     const settlements = computeSettlements(balances);
-    if (!settlements.length) return "Everyone's square — no outstanding balances. 🎉";
+    if (!settlements.length) return "Todos están a mano — no hay saldos pendientes. 🎉";
     const lines = settlements.map((s) => `• ${name(s.fromId)} → ${name(s.toId)}: ${formatUSD(s.amount)}`);
-    return `Here's how to settle up:\n${lines.join("\n")}`;
+    return `Así quedan las cuentas:\n${lines.join("\n")}`;
   }
 
-  // Weather
-  if (/(weather|rain|temperature|hot|cold|umbrella|sunscreen)/.test(t)) {
-    const city = t.includes("new york") || t.includes("ny") ? "New York" : t.includes("la") || t.includes("angeles") ? "Los Angeles" : null;
+  // Clima
+  if (/(clima|tiempo|lluvia|temperatura|calor|frío|frio|paraguas|bloqueador|sol)/.test(t)) {
+    const city = /nueva york|ny/.test(t) ? "Nueva York"
+      : /(los ángeles|los angeles|\bla\b)/.test(t) ? "Los Ángeles"
+      : /boston/.test(t) ? "Boston"
+      : /bogot/.test(t) ? "Bogotá" : null;
     const w = city ? ctx.weather.find((x) => x.city === city) : ctx.weather[0];
-    if (!w) return "I don't have weather data right now.";
+    if (!w) return "No tengo datos del clima ahora mismo.";
     const rec = w.recommendations[0] ? ` ${w.recommendations[0]}.` : "";
-    return `${w.city}: **${w.temp}°C, ${w.condition}** (feels ${w.feelsLike}°). Tomorrow's high is ~${w.daily[1]?.max ?? w.daily[0]?.max}°.${rec}`;
+    return `${w.city}: **${w.temp}°C, ${w.condition}** (sensación ${w.feelsLike}°). La máxima de mañana es ~${w.daily[1]?.max ?? w.daily[0]?.max}°.${rec}`;
   }
 
-  // Photos / location
-  if (/(photo|picture|where.*taken|located)/.test(t)) {
+  // Fotos / ubicación
+  if (/(foto|imagen|dónde.*tom|donde.*tom|ubicad)/.test(t)) {
     const geo = ctx.photos.filter((p) => p.lat && p.lng);
-    return `There are **${ctx.photos.length} photos** in the vault, ${geo.length} of them geotagged. Open any photo and tap "Show where this was taken" to see it on the map.`;
+    return `Hay **${ctx.photos.length} fotos** en el baúl, ${geo.length} con ubicación. Abre cualquier foto y toca "Mostrar dónde se tomó" para verla en el mapa.`;
   }
 
-  // Flights
-  if (/(flight|fly|gate|terminal|depart|airport)/.test(t)) {
-    const upcoming = [...ctx.flights].filter((f) => +parseISO(f.departure) > ctx.now).sort((a, b) => +parseISO(a.departure) - +parseISO(b.departure))[0];
-    if (!upcoming) return "No upcoming flights — you've landed for good.";
-    return `Next flight: **${upcoming.flightNumber}** (${upcoming.airline}) ${upcoming.from.code} → ${upcoming.to.code}, departing ${format(parseISO(upcoming.departure), "EEE d MMM 'at' h:mm a")}. Gate ${upcoming.gate ?? "TBA"}, terminal ${upcoming.terminal ?? "TBA"}.`;
+  // Vuelos
+  if (/(vuelo|volar|puerta|terminal|sal|aeropuerto|avión|avion)/.test(t)) {
+    const upcoming = [...ctx.flights]
+      .filter((f) => +parseISO(f.departure) > ctx.now && (!f.group || f.group === "all" || f.group === group))
+      .sort((a, b) => +parseISO(a.departure) - +parseISO(b.departure))[0];
+    if (!upcoming) return "No hay vuelos próximos — ya aterrizaste para quedarte.";
+    return `Próximo vuelo: **${upcoming.flightNumber}** (${upcoming.airline}) ${upcoming.from.code} → ${upcoming.to.code}, sale ${fmt(parseISO(upcoming.departure), "EEE d MMM 'a las' h:mm a")}. Puerta ${upcoming.gate ?? "por confirmar"}, terminal ${upcoming.terminal ?? "por confirmar"}.`;
   }
 
-  // Election
-  if (/(vote|election|voting|registr)/.test(t)) {
-    return "You land in Bogotá on June 21 and head straight to vote. Check the **Election Hub** for your countdown and checklist — don't forget your cédula in your carry-on!";
+  // Elecciones
+  if (/(vot|elecci|registr)/.test(t)) {
+    return "Juan y Jeronimo aterrizan en Bogotá el 21 de junio y van directo a votar. Revisa el **Centro de Elecciones** para el conteo regresivo y la lista de pendientes — ¡no olviden la cédula en el equipaje de mano!";
   }
 
-  return "I can help with the itinerary, spending & balances, weather, flights, photos, and election day. Try: \"What's next?\", \"How much have we spent?\", or \"Who owes who?\"";
+  return "Puedo ayudarte con el itinerario, gastos y saldos, clima, vuelos, fotos y el día de elecciones. Prueba: \"¿Qué sigue?\", \"¿Cuánto hemos gastado?\" o \"¿Quién le debe a quién?\"";
 }
 
 export const SUGGESTED = [
-  "What's next on the itinerary?",
-  "How much have we spent?",
-  "Who owes who money?",
-  "What's the weather in New York?",
-  "When's our next flight?",
+  "¿Qué sigue en el itinerario?",
+  "¿Cuánto hemos gastado?",
+  "¿Quién le debe a quién?",
+  "¿Cómo está el clima en Nueva York?",
+  "¿Cuándo es nuestro próximo vuelo?",
 ];

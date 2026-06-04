@@ -9,18 +9,20 @@ import { TripMap, type MapPin as Pin } from "@/components/map/trip-map";
 import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { SectionTitle } from "@/components/ui/misc";
-import { format, parseISO, differenceInMinutes } from "date-fns";
-import { countdownTo } from "@/lib/utils";
+import { parseISO, differenceInMinutes } from "date-fns";
+import { countdownTo, fmt } from "@/lib/utils";
 import type { Flight, FlightStatus } from "@/lib/types";
 
 const STATUS: Record<FlightStatus, { label: string; variant: any }> = {
-  scheduled: { label: "Scheduled", variant: "default" },
-  boarding: { label: "Boarding", variant: "gold" },
-  "in-air": { label: "In Air", variant: "cyan" },
-  landed: { label: "Landed", variant: "success" },
-  delayed: { label: "Delayed", variant: "warning" },
-  cancelled: { label: "Cancelled", variant: "danger" },
+  scheduled: { label: "Programado", variant: "default" },
+  boarding: { label: "Abordando", variant: "gold" },
+  "in-air": { label: "En vuelo", variant: "cyan" },
+  landed: { label: "Aterrizó", variant: "success" },
+  delayed: { label: "Demorado", variant: "warning" },
+  cancelled: { label: "Cancelado", variant: "danger" },
 };
+
+const GROUP_LABEL: Record<string, string> = { bogota: "Grupo Bogotá", boston: "Grupo Boston", all: "Todos" };
 
 export default function FlightsPage() {
   const { data: flights } = useCollection<Flight>("flights");
@@ -38,19 +40,19 @@ export default function FlightsPage() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="Operations"
-        title="Flight Center"
-        action={<Tabs value={view} onChange={setView} tabs={[{ id: "board", label: "Board" }, { id: "cards", label: "Cards" }, { id: "map", label: "Route Map" }]} />}
+        eyebrow="Operaciones"
+        title="Centro de Vuelos"
+        action={<Tabs value={view} onChange={setView} tabs={[{ id: "board", label: "Tablero" }, { id: "cards", label: "Tarjetas" }, { id: "map", label: "Mapa" }]} />}
       />
 
       {view === "board" && (
         <div className="glass overflow-hidden rounded-2xl">
           <div className="ticker grid grid-cols-[1fr_auto] items-center gap-4 border-b border-white/10 bg-navy-800/60 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-400 sm:grid-cols-[auto_1fr_auto_auto_auto]">
-            <span>Flight</span>
-            <span className="hidden sm:block">Route</span>
-            <span className="hidden sm:block">Depart</span>
-            <span className="hidden sm:block">Gate</span>
-            <span className="text-right">Status</span>
+            <span>Vuelo</span>
+            <span className="hidden sm:block">Ruta</span>
+            <span className="hidden sm:block">Sale</span>
+            <span className="hidden sm:block">Puerta</span>
+            <span className="text-right">Estado</span>
           </div>
           {sorted.map((f, i) => (
             <motion.div
@@ -67,7 +69,7 @@ export default function FlightsPage() {
                 <ArrowRight className="size-3.5 text-muted-foreground" />
                 <span className="board-font font-semibold">{f.to.code}</span>
               </div>
-              <div className="board-font hidden text-sm sm:block">{format(parseISO(f.departure), "MMM d · HH:mm")}</div>
+              <div className="board-font hidden text-sm sm:block">{fmt(parseISO(f.departure), "MMM d · HH:mm")}</div>
               <div className="board-font hidden text-sm text-gold-400 sm:block">{f.gate ?? "—"}</div>
               <div className="text-right"><Badge variant={STATUS[f.status].variant}>{STATUS[f.status].label}</Badge></div>
             </motion.div>
@@ -87,6 +89,7 @@ export default function FlightsPage() {
                     <Plane className="size-4 text-electric-400" />
                     <span className="board-font font-bold">{f.flightNumber}</span>
                     <span className="text-xs text-muted-foreground">{f.airline}</span>
+                    {f.group && f.group !== "all" && <Badge variant="muted">{GROUP_LABEL[f.group]}</Badge>}
                   </div>
                   <Badge variant={STATUS[f.status].variant}>{STATUS[f.status].label}</Badge>
                 </div>
@@ -94,7 +97,7 @@ export default function FlightsPage() {
                   <div>
                     <div className="board-font text-3xl font-bold">{f.from.code}</div>
                     <div className="text-xs text-muted-foreground">{f.from.city}</div>
-                    <div className="board-font mt-1 text-sm">{format(parseISO(f.departure), "HH:mm")}</div>
+                    <div className="board-font mt-1 text-sm">{fmt(parseISO(f.departure), "HH:mm")}</div>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="text-[10px] text-muted-foreground">{Math.floor(dur / 60)}h {dur % 60}m</div>
@@ -107,18 +110,18 @@ export default function FlightsPage() {
                   <div className="text-right">
                     <div className="board-font text-3xl font-bold">{f.to.code}</div>
                     <div className="text-xs text-muted-foreground">{f.to.city}</div>
-                    <div className="board-font mt-1 text-sm">{format(parseISO(f.arrival), "HH:mm")}</div>
+                    <div className="board-font mt-1 text-sm">{fmt(parseISO(f.arrival), "HH:mm")}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-2 border-t border-white/10 px-5 py-3 text-center text-xs">
                   <div><div className="text-muted-foreground">Terminal</div><div className="board-font font-semibold">{f.terminal ?? "—"}</div></div>
-                  <div><div className="text-muted-foreground">Gate</div><div className="board-font font-semibold text-gold-400">{f.gate ?? "—"}</div></div>
-                  <div><div className="text-muted-foreground">Seat</div><div className="board-font font-semibold">{f.seat ?? "—"}</div></div>
+                  <div><div className="text-muted-foreground">Puerta</div><div className="board-font font-semibold text-gold-400">{f.gate ?? "—"}</div></div>
+                  <div><div className="text-muted-foreground">Silla</div><div className="board-font font-semibold">{f.seat ?? "—"}</div></div>
                   <div><div className="text-muted-foreground">Conf</div><div className="board-font font-semibold">{f.confirmation ?? "—"}</div></div>
                 </div>
                 {c && !c.done && (
                   <div className="border-t border-white/10 bg-gold-500/5 px-5 py-2 text-center text-xs text-gold-300">
-                    <Clock className="mr-1 inline size-3" /> Departs in {c.days}d {c.hours}h {c.minutes}m
+                    <Clock className="mr-1 inline size-3" /> Sale en {c.days}d {c.hours}h {c.minutes}m
                   </div>
                 )}
               </div>
@@ -133,8 +136,8 @@ export default function FlightsPage() {
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[["BOG", "El Dorado Intl", "Bogotá, Colombia"], ["LAX", "Los Angeles Intl", "California, USA"], ["JFK", "John F. Kennedy Intl", "New York, USA"]].map(([code, name, loc]) => (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[["BOG", "El Dorado Intl", "Bogotá, Colombia"], ["PTY", "Tocumen Intl", "Ciudad de Panamá"], ["BOS", "Logan Intl", "Boston, EE.UU."], ["LAX", "Los Ángeles Intl", "California, EE.UU."], ["JFK", "John F. Kennedy Intl", "Nueva York, EE.UU."]].map(([code, name, loc]) => (
           <div key={code} className="glass flex items-center gap-3 rounded-2xl p-4">
             <div className="board-font grid size-12 place-items-center rounded-xl bg-electric-500/15 text-lg font-bold text-electric-400">{code}</div>
             <div>

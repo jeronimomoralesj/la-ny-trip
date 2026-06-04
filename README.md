@@ -74,12 +74,12 @@ demo login where you tap any of the four travelers.
    This pushes all collections and creates the four accounts with password
    `worldcup2026`:
 
-   | Name | Email | Role |
-   | --- | --- | --- |
-   | Jeronimo | jeronimo@lanyviaje.com | admin |
-   | Mateo | mateo@lanyviaje.com | member |
-   | Santiago | santiago@lanyviaje.com | member |
-   | User4 | user4@lanyviaje.com | member |
+   | Nombre | Email | Grupo | Rol |
+   | --- | --- | --- | --- |
+   | Jeronimo | jeronimo@lanyviaje.com | Bogotá → Panamá → LA | admin |
+   | Juan | juan@lanyviaje.com | Bogotá → Panamá → LA | member |
+   | Mateo | mateo@lanyviaje.com | Boston → LA | member |
+   | Valeria | valeria@lanyviaje.com | Boston → LA | member |
 
 5. **Deploy security rules:**
 

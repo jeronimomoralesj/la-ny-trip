@@ -23,7 +23,7 @@ export default function AssistantPage() {
   const { data: weather } = useWeather();
 
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", text: `Hi ${user?.name ?? "traveler"} 👋 I'm your trip co-pilot. Ask me about the itinerary, money, weather, flights, or photos.` },
+    { role: "assistant", text: `¡Hola ${user?.name ?? "viajero"}! 👋 Soy tu copiloto del viaje. Pregúntame por el itinerario, el dinero, el clima, los vuelos o las fotos.` },
   ]);
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export default function AssistantPage() {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-9rem)] max-w-3xl flex-col">
-      <SectionTitle eyebrow="Squad" title="AI Travel Assistant" />
+      <SectionTitle eyebrow="Escuadrón" title="Asistente de Viaje IA" />
 
       <div className="glass flex flex-1 flex-col overflow-hidden rounded-2xl">
         <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3">
@@ -50,8 +50,8 @@ export default function AssistantPage() {
             <Bot className="size-4 text-navy-950" />
           </div>
           <div>
-            <div className="text-sm font-semibold">Co-Pilot</div>
-            <div className="flex items-center gap-1 text-[11px] text-muted-foreground"><Sparkles className="size-3 text-gold-400" /> Reads your live trip data</div>
+            <div className="text-sm font-semibold">Copiloto</div>
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground"><Sparkles className="size-3 text-gold-400" /> Lee los datos reales del viaje</div>
           </div>
         </div>
 
@@ -80,12 +80,12 @@ export default function AssistantPage() {
         )}
 
         <div className="flex gap-2 border-t border-white/10 p-4">
-          <Input placeholder="Ask your co-pilot…" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} />
+          <Input placeholder="Pregúntale a tu copiloto…" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} />
           <Button onClick={() => send(input)}><Send className="size-4" /></Button>
         </div>
       </div>
       <p className="mt-2 text-center text-xs text-muted-foreground/60">
-        Mock assistant · architecture is LLM-ready — swap the rule engine for a model call with the same context.
+Asistente de demostración · arquitectura lista para LLM — reemplaza el motor de reglas por una llamada a un modelo con el mismo contexto.
       </p>
     </div>
   );

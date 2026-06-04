@@ -86,10 +86,10 @@ export function TripMap({
       <div className={className}>
         <div className="grid h-full place-items-center rounded-2xl border border-dashed border-white/15 bg-navy-800/40 p-8 text-center">
           <div>
-            <p className="font-medium">Mapbox token not set</p>
+            <p className="font-medium">Falta el token de Mapbox</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Add <code className="rounded bg-white/10 px-1">NEXT_PUBLIC_MAPBOX_TOKEN</code> to
-              <code className="rounded bg-white/10 px-1">.env.local</code> to light up the command-center map. Pins are listed below in the meantime.
+              Agrega <code className="rounded bg-white/10 px-1">NEXT_PUBLIC_MAPBOX_TOKEN</code> en
+              <code className="rounded bg-white/10 px-1">.env.local</code> para activar el mapa. Mientras tanto, las ubicaciones aparecen en la lista.
             </p>
           </div>
         </div>

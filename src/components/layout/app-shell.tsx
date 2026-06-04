@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="grid size-12 animate-pulse place-items-center rounded-2xl bg-gradient-to-br from-electric-500 to-gold-500">
             <Plane className="size-6 -rotate-45 text-navy-950" />
           </div>
-          <p className="text-sm text-muted-foreground">Booting Mission Control…</p>
+          <p className="text-sm text-muted-foreground">Iniciando Centro de Mando…</p>
         </div>
       </div>
     );
@@ -27,7 +27,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/10 bg-navy-950/50 backdrop-blur-xl lg:block">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-white/10 bg-navy-950/95 lg:block">
         <Sidebar />
       </aside>
 
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Topbar onMenu={() => setMobileOpen(true)} />
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
         <footer className="border-t border-white/10 px-6 py-4 text-center text-xs text-muted-foreground/60">
-          la-ny-viaje · built for the squad · Colombia → LA → NY · WC 2026
+la-ny-viaje · hecho para el escuadrón · Colombia → LA → NY · Mundial 2026
         </footer>
       </div>
     </div>

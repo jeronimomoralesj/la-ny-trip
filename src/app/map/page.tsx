@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import type { LocationCategory, TripLocation } from "@/lib/types";
 
 const CAT: Record<LocationCategory, { label: string; color: string; icon: any }> = {
-  airport: { label: "Airports", color: "#3b82f6", icon: Plane },
-  "theme-park": { label: "Theme Parks", color: "#ec4899", icon: FerrisWheel },
+  airport: { label: "Aeropuertos", color: "#3b82f6", icon: Plane },
+  "theme-park": { label: "Parques", color: "#ec4899", icon: FerrisWheel },
   "fan-fest": { label: "Fan Fests", color: "#f5c451", icon: PartyPopper },
-  restaurant: { label: "Restaurants", color: "#f97316", icon: UtensilsCrossed },
-  family: { label: "Family", color: "#ef4444", icon: Heart },
-  hotel: { label: "Hotels", color: "#22d3ee", icon: Hotel },
-  parking: { label: "Parking", color: "#94a3b8", icon: ParkingSquare },
-  stadium: { label: "Stadiums", color: "#22c55e", icon: Trophy },
-  landmark: { label: "Landmarks", color: "#a78bfa", icon: Landmark },
+  restaurant: { label: "Restaurantes", color: "#f97316", icon: UtensilsCrossed },
+  family: { label: "Familia", color: "#ef4444", icon: Heart },
+  hotel: { label: "Hoteles", color: "#22d3ee", icon: Hotel },
+  parking: { label: "Parqueaderos", color: "#94a3b8", icon: ParkingSquare },
+  stadium: { label: "Estadios", color: "#22c55e", icon: Trophy },
+  landmark: { label: "Lugares", color: "#a78bfa", icon: Landmark },
 };
 
 // BOG → LAX → JFK → BOG
@@ -59,8 +59,8 @@ export default function MapPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-electric-400/80">Command Map</div>
-          <h1 className="text-2xl font-semibold tracking-tight">Route & Locations</h1>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-electric-400/80">Mapa de Comando</div>
+          <h1 className="text-2xl font-semibold tracking-tight">Ruta y Ubicaciones</h1>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {(Object.keys(CAT) as LocationCategory[]).map((c) => {
@@ -127,7 +127,7 @@ export default function MapPage() {
             </div>
             <Button variant="glass" className="w-full"
               onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`, "_blank")}>
-              <Navigation className="size-4" /> Directions
+              <Navigation className="size-4" /> Direcciones
             </Button>
           </div>
         )}

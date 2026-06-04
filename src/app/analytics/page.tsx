@@ -38,19 +38,19 @@ export default function AnalyticsPage() {
     })), [photos, expenses, food]);
 
   const stats = [
-    { label: "Days Traveled", value: 13, icon: Calendar, accent: "#3b82f6" },
-    { label: "Cities Visited", value: 3, icon: MapPin, accent: "#22d3ee" },
-    { label: "Flights", value: flights.length, icon: Plane, accent: "#a78bfa" },
-    { label: "Photos", value: photos.length, icon: Images, accent: "#ec4899" },
-    { label: "Expenses", value: expenses.length, icon: Receipt, accent: "#f5c451" },
-    { label: "Restaurants", value: food.length, icon: UtensilsCrossed, accent: "#f97316" },
-    { label: "Rides Done", value: ridesDone, icon: FerrisWheel, accent: "#22c55e" },
-    { label: "Events", value: events.length, icon: Trophy, accent: "#eab308" },
+    { label: "Días de viaje", value: 13, icon: Calendar, accent: "#3b82f6" },
+    { label: "Ciudades", value: 4, icon: MapPin, accent: "#22d3ee" },
+    { label: "Vuelos", value: flights.length, icon: Plane, accent: "#a78bfa" },
+    { label: "Fotos", value: photos.length, icon: Images, accent: "#ec4899" },
+    { label: "Gastos", value: expenses.length, icon: Receipt, accent: "#f5c451" },
+    { label: "Restaurantes", value: food.length, icon: UtensilsCrossed, accent: "#f97316" },
+    { label: "Atracciones", value: ridesDone, icon: FerrisWheel, accent: "#22c55e" },
+    { label: "Eventos", value: events.length, icon: Trophy, accent: "#eab308" },
   ];
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Squad" title="Trip Analytics" />
+      <SectionTitle eyebrow="Escuadrón" title="Analíticas del Viaje" />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s, i) => (
@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-6">
-          <h2 className="mb-4 font-semibold">Photos by Traveler</h2>
+          <h2 className="mb-4 font-semibold">Fotos por viajero</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={photosByUser}>
@@ -82,15 +82,15 @@ export default function AnalyticsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="mb-4 font-semibold">Squad Contribution</h2>
+          <h2 className="mb-4 font-semibold">Contribución del escuadrón</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={contribution} outerRadius="75%">
                 <PolarGrid stroke="rgba(255,255,255,.1)" />
                 <PolarAngleAxis dataKey="user" tick={{ fill: "#94a3b8", fontSize: 12 }} />
-                <Radar name="Photos" dataKey="photos" stroke="#ec4899" fill="#ec4899" fillOpacity={0.3} />
-                <Radar name="Expenses" dataKey="expenses" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
-                <Radar name="Food" dataKey="food" stroke="#f5c451" fill="#f5c451" fillOpacity={0.3} />
+                <Radar name="Fotos" dataKey="photos" stroke="#ec4899" fill="#ec4899" fillOpacity={0.3} />
+                <Radar name="Gastos" dataKey="expenses" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
+                <Radar name="Comida" dataKey="food" stroke="#f5c451" fill="#f5c451" fillOpacity={0.3} />
                 <Tooltip contentStyle={{ background: "#0c1024", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, fontSize: 12 }} />
               </RadarChart>
             </ResponsiveContainer>
@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
       </div>
 
       <Card className="p-6">
-        <h2 className="mb-4 font-semibold">Top Rated Spots</h2>
+        <h2 className="mb-4 font-semibold">Mejores calificados</h2>
         <div className="space-y-2">
           {[...food].sort((a, b) => b.rating - a.rating).slice(0, 5).map((f) => (
             <div key={f.id} className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3">

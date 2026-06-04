@@ -11,14 +11,14 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress, SectionTitle, Avatar } from "@/components/ui/misc";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
+import { cn, fmt } from "@/lib/utils";
+import { parseISO } from "date-fns";
 import type { ElectionTask, ElectionNote } from "@/lib/types";
 
 const KEY_DATES = [
-  { date: "2026-06-20", label: "Red-eye home", detail: "JFK → BOG overnight" },
-  { date: "2026-06-21", label: "Election Day", detail: "Land 06:30, polls open 08:00" },
-  { date: "2026-06-21", label: "Polls close", detail: "Vote before 16:00" },
+  { date: "2026-06-20", label: "Vuelo nocturno", detail: "JFK → BOG de noche" },
+  { date: "2026-06-21", label: "Día de elecciones", detail: "Aterriza 06:30, urnas abren 08:00" },
+  { date: "2026-06-21", label: "Cierre de urnas", detail: "Votar antes de las 16:00" },
 ];
 
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
@@ -35,7 +35,7 @@ export default function ElectionsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Civic Duty" title="Colombia 2026 Election Hub" />
+      <SectionTitle eyebrow="Deber Cívico" title="Centro de Elecciones Colombia 2026" />
 
       {/* Hero countdown */}
       <Card className="relative overflow-hidden p-6 sm:p-8">
@@ -44,16 +44,16 @@ export default function ElectionsPage() {
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
-              <Flag className="size-4" /> Straight from the airport to the polls
+              <Flag className="size-4" /> Directo del aeropuerto a las urnas
             </div>
-            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">We land, then we vote.</h2>
+            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Aterrizamos y vamos a votar.</h2>
             <p className="mt-1 max-w-md text-sm text-muted-foreground">
-              The squad returns to Bogotá on election day and heads directly to the polling station. Stay ready.
+              Juan y Jeronimo regresan a Bogotá el día de elecciones y van directo al puesto de votación. A estar listos.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-5 backdrop-blur">
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
             <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400">
-              <CalendarClock className="size-3.5" /> Countdown to polls
+              <CalendarClock className="size-3.5" /> Cuenta regresiva a las urnas
             </div>
             <Countdown target={ELECTION_DAY} />
           </div>
@@ -65,8 +65,8 @@ export default function ElectionsPage() {
         <div className="lg:col-span-2 space-y-4">
           <Card className="p-6">
             <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2"><Vote className="size-5 text-emerald-400" /><h3 className="font-semibold">Voting Checklist</h3></div>
-              <span className="text-sm text-muted-foreground">{done}/{tasks.length} done</span>
+              <div className="flex items-center gap-2"><Vote className="size-5 text-emerald-400" /><h3 className="font-semibold">Lista de votación</h3></div>
+              <span className="text-sm text-muted-foreground">{done}/{tasks.length} listos</span>
             </div>
             <Progress value={pct} className="mb-4 h-2.5" barClassName="bg-gradient-to-r from-emerald-500 to-gold-400" />
             <div className="space-y-1">
@@ -86,7 +86,7 @@ export default function ElectionsPage() {
               ))}
             </div>
             <div className="mt-3 flex gap-2">
-              <Input placeholder="Add a reminder…" value={taskLabel} onChange={(e) => setTaskLabel(e.target.value)}
+              <Input placeholder="Agregar un recordatorio…" value={taskLabel} onChange={(e) => setTaskLabel(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && taskLabel.trim()) { addTask.mutate({ label: taskLabel.trim(), done: false } as Omit<ElectionTask, "id">); setTaskLabel(""); } }} />
               <Button onClick={() => { if (taskLabel.trim()) { addTask.mutate({ label: taskLabel.trim(), done: false } as Omit<ElectionTask, "id">); setTaskLabel(""); } }}>
                 <Plus className="size-4" />
@@ -96,14 +96,14 @@ export default function ElectionsPage() {
 
           {/* Notes */}
           <Card className="p-6">
-            <div className="mb-3 flex items-center gap-2"><FileText className="size-5 text-electric-400" /><h3 className="font-semibold">Notes</h3></div>
+            <div className="mb-3 flex items-center gap-2"><FileText className="size-5 text-electric-400" /><h3 className="font-semibold">Notas</h3></div>
             <div className="space-y-2">
               {notes.map((n) => (
                 <div key={n.id} className="group flex gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3">
                   <Avatar name={userName(n.authorId)} color={SEED_USERS.find((u) => u.id === n.authorId)?.avatarColor} size={28} />
                   <div className="flex-1">
                     <p className="text-sm">{n.body}</p>
-                    <div className="mt-1 text-xs text-muted-foreground">{userName(n.authorId)} · {format(parseISO(n.createdAt), "MMM d")}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{userName(n.authorId)} · {fmt(parseISO(n.createdAt), "d MMM")}</div>
                   </div>
                   <button onClick={() => removeNote.mutate(n.id)} className="opacity-0 transition group-hover:opacity-100">
                     <Trash2 className="size-3.5 text-muted-foreground hover:text-red-400" />
@@ -112,7 +112,7 @@ export default function ElectionsPage() {
               ))}
             </div>
             <div className="mt-3 flex gap-2">
-              <Textarea placeholder="Add a note for the group…" value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[44px]" />
+              <Textarea placeholder="Agregar una nota para el grupo…" value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[44px]" />
               <Button onClick={() => { if (note.trim()) { addNote.mutate({ body: note.trim(), authorId: user?.id ?? "jeronimo", createdAt: new Date().toISOString() } as Omit<ElectionNote, "id">); setNote(""); } }}>
                 <Plus className="size-4" />
               </Button>
@@ -123,12 +123,12 @@ export default function ElectionsPage() {
         {/* Key dates + future modules */}
         <div className="space-y-4">
           <Card className="p-6">
-            <h3 className="mb-3 font-semibold">Key Dates</h3>
+            <h3 className="mb-3 font-semibold">Fechas clave</h3>
             <div className="space-y-3">
               {KEY_DATES.map((d, i) => (
                 <div key={i} className="flex gap-3">
                   <div className="board-font grid size-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-navy-800 text-center text-xs leading-tight">
-                    <div><div className="font-bold text-emerald-400">{format(parseISO(d.date), "dd")}</div><div className="text-[9px] text-muted-foreground">{format(parseISO(d.date), "MMM")}</div></div>
+                    <div><div className="font-bold text-emerald-400">{fmt(parseISO(d.date), "dd")}</div><div className="text-[9px] text-muted-foreground">{fmt(parseISO(d.date), "MMM")}</div></div>
                   </div>
                   <div><div className="text-sm font-medium">{d.label}</div><div className="text-xs text-muted-foreground">{d.detail}</div></div>
                 </div>
@@ -137,13 +137,13 @@ export default function ElectionsPage() {
           </Card>
 
           <Card className="border-dashed p-6">
-            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Coming soon</h3>
+            <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Próximamente</h3>
             <ul className="space-y-1.5 text-sm text-muted-foreground/70">
-              <li>• Candidate information</li>
-              <li>• Live election tracking</li>
-              <li>• News & polling data</li>
+              <li>• Información de candidatos</li>
+              <li>• Seguimiento de resultados en vivo</li>
+              <li>• Noticias y encuestas</li>
             </ul>
-            <p className="mt-3 text-xs text-muted-foreground/50">Foundation built for future expansion.</p>
+            <p className="mt-3 text-xs text-muted-foreground/50">Base lista para expansión futura.</p>
           </Card>
         </div>
       </div>

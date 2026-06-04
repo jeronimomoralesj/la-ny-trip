@@ -65,9 +65,16 @@
 }
 
 @layer components {
+  /* Solid translucent panel — NO backdrop-blur (blur on dozens of cards is the
+     biggest cause of scroll jank on weaker GPUs). Overlays opt back in via
+     .glass-blur. */
   .glass {
-    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+    @apply border border-white/10 bg-navy-800/70;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-blur {
+    @apply border border-white/10 bg-navy-900/80 backdrop-blur-xl;
   }
 
   .glass-hover {

@@ -4,6 +4,9 @@
 
 export type Role = "admin" | "member";
 
+/** Travelers split into two groups until they all meet in Los Angeles. */
+export type TravelGroup = "bogota" | "boston" | "all";
+
 export interface AppUser {
   id: string;
   name: string;
@@ -11,6 +14,7 @@ export interface AppUser {
   role: Role;
   avatarColor: string; // hex used for avatar gradient
   initials: string;
+  group?: Exclude<TravelGroup, "all">; // which travel party they belong to
 }
 
 // ── Trip phases ───────────────────────────────────────────────
@@ -71,6 +75,7 @@ export interface TimelineEvent {
   notes?: string;
   attachments?: { name: string; url: string }[];
   icon?: string;
+  group?: TravelGroup; // which party this event applies to ("all" once together)
 }
 
 // ── Flights ───────────────────────────────────────────────────
@@ -89,6 +94,7 @@ export interface Flight {
   seat?: string;
   status: FlightStatus;
   confirmation?: string;
+  group?: TravelGroup;
 }
 
 // ── Expenses ──────────────────────────────────────────────────

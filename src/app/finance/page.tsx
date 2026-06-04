@@ -18,6 +18,11 @@ import type { Expense } from "@/lib/types";
 const COLORS = ["#3b82f6", "#f5c451", "#22d3ee", "#a78bfa", "#22c55e", "#f97316", "#ec4899", "#14b8a6", "#eab308", "#94a3b8"];
 const USER_IDS = SEED_USERS.map((u) => u.id);
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
+const CAT_LABEL: Record<string, string> = {
+  food: "comida", drinks: "bebidas", transport: "transporte", lodging: "alojamiento",
+  tickets: "entradas", souvenirs: "souvenirs", groceries: "mercado", gas: "gasolina",
+  parking: "parqueadero", other: "otro",
+};
 
 export default function FinancePage() {
   return (
@@ -52,20 +57,20 @@ function FinanceInner() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Money" title="Financial Command Center" />
+      <SectionTitle eyebrow="Dinero" title="Centro Financiero" />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Total Spend" value={formatUSD(total)} accent="#3b82f6" />
-        <Stat label="Shared Pool" value={formatUSD(shared)} sub={`${Math.round((shared / total) * 100) || 0}% of total`} accent="#22d3ee" />
-        <Stat label="Per Person" value={formatUSD(total / 4)} sub="even split" accent="#f5c451" />
-        <Stat label="Expenses" value={expenses.length} sub="logged" accent="#a78bfa" />
+        <Stat label="Gasto total" value={formatUSD(total)} accent="#3b82f6" />
+        <Stat label="Bolsa compartida" value={formatUSD(shared)} sub={`${Math.round((shared / total) * 100) || 0}% del total`} accent="#22d3ee" />
+        <Stat label="Por persona" value={formatUSD(total / 4)} sub="división equitativa" accent="#f5c451" />
+        <Stat label="Gastos" value={expenses.length} sub="registrados" accent="#a78bfa" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-6">
           <div className="mb-4 flex items-center gap-2">
             <PiggyBank className="size-5 text-gold-400" />
-            <h2 className="font-semibold">Spending by Category</h2>
+            <h2 className="font-semibold">Gasto por categoría</h2>
           </div>
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="h-52 w-52 shrink-0">
@@ -85,7 +90,7 @@ function FinanceInner() {
               {byCategory.map((c, i) => (
                 <div key={c.name} className="flex items-center gap-2 text-sm">
                   <span className="size-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="capitalize text-muted-foreground">{c.name}</span>
+                  <span className="capitalize text-muted-foreground">{CAT_LABEL[c.name] ?? c.name}</span>
                   <span className="ml-auto font-medium">{formatUSD(c.value)}</span>
                 </div>
               ))}
@@ -96,7 +101,7 @@ function FinanceInner() {
         <Card className="p-6">
           <div className="mb-4 flex items-center gap-2">
             <Users className="size-5 text-electric-400" />
-            <h2 className="font-semibold">Paid vs. Owed</h2>
+            <h2 className="font-semibold">Pagado vs. Debido</h2>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -109,8 +114,8 @@ function FinanceInner() {
                   formatter={(v: any) => formatUSD(Number(v))}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="paid" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="owed" fill="#f5c451" radius={[6, 6, 0, 0]} />
+                <Bar name="Pagado" dataKey="paid" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                <Bar name="Parte" dataKey="owed" fill="#f5c451" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -121,7 +126,7 @@ function FinanceInner() {
         <Card className="p-6 lg:col-span-2">
           <div className="mb-4 flex items-center gap-2">
             <Wallet className="size-5 text-emerald-400" />
-            <h2 className="font-semibold">Balances & Settlements</h2>
+            <h2 className="font-semibold">Saldos y Liquidaciones</h2>
           </div>
           <div className="space-y-2">
             {balances.map((b) => (
@@ -129,17 +134,17 @@ function FinanceInner() {
                 <Avatar name={userName(b.userId)} color={SEED_USERS.find((u) => u.id === b.userId)?.avatarColor} size={32} />
                 <div className="flex-1">
                   <div className="text-sm font-medium">{userName(b.userId)}</div>
-                  <div className="text-xs text-muted-foreground">paid {formatUSD(b.paid)} · share {formatUSD(b.owed)}</div>
+                  <div className="text-xs text-muted-foreground">pagó {formatUSD(b.paid)} · parte {formatUSD(b.owed)}</div>
                 </div>
                 <div className={`board-font font-semibold ${b.net >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {b.net >= 0 ? "gets " : "owes "}{formatUSD(Math.abs(b.net))}
+                  {b.net >= 0 ? "recibe " : "debe "}{formatUSD(Math.abs(b.net))}
                 </div>
               </div>
             ))}
           </div>
           {settlements.length > 0 && (
             <div className="mt-4 border-t border-white/10 pt-4">
-              <div className="mb-2 text-sm font-medium text-muted-foreground">To settle up:</div>
+              <div className="mb-2 text-sm font-medium text-muted-foreground">Para saldar:</div>
               <div className="space-y-1.5">
                 {settlements.map((s, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">

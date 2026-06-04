@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { SectionTitle, Avatar } from "@/components/ui/misc";
 import { SEED_USERS } from "@/lib/seed-data";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { fmt } from "@/lib/utils";
 import type { Photo } from "@/lib/types";
 
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
@@ -56,13 +57,13 @@ export default function PhotosPage() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="Memories"
-        title="Photo Vault"
+        eyebrow="Recuerdos"
+        title="Baúl de Fotos"
         action={
           <div className="flex items-center gap-2">
-            <Tabs value={view} onChange={setView} tabs={[{ id: "gallery", label: "Gallery", icon: Grid3x3 }, { id: "map", label: "Map", icon: MapIcon }, { id: "timeline", label: "Timeline", icon: Calendar }]} />
+            <Tabs value={view} onChange={setView} tabs={[{ id: "gallery", label: "Galería", icon: Grid3x3 }, { id: "map", label: "Mapa", icon: MapIcon }, { id: "timeline", label: "Línea", icon: Calendar }]} />
             <Button variant="gold" onClick={() => fileRef.current?.click()} disabled={uploading}>
-              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Upload
+              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Subir
             </Button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
           </div>
@@ -82,7 +83,7 @@ export default function PhotosPage() {
               <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-transparent to-transparent p-3 opacity-0 transition group-hover:opacity-100">
                 <div>
                   <div className="text-sm font-medium text-white">{p.title}</div>
-                  {p.lat && <div className="flex items-center gap-1 text-[11px] text-white/70"><MapPin className="size-3" /> located</div>}
+                  {p.lat && <div className="flex items-center gap-1 text-[11px] text-white/70"><MapPin className="size-3" /> ubicada</div>}
                 </div>
               </div>
             </motion.button>
@@ -97,7 +98,7 @@ export default function PhotosPage() {
             onSelect={(id) => setSelected(photos.find((p) => p.id === id) ?? null)}
             className="h-[60vh] w-full"
           />
-          {geo.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">No geotagged photos yet. Upload images with EXIF GPS to map them.</p>}
+          {geo.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">Aún no hay fotos con ubicación. Sube imágenes con GPS (EXIF) para verlas en el mapa.</p>}
         </div>
       )}
 
@@ -106,7 +107,7 @@ export default function PhotosPage() {
           {Object.entries(byDay).map(([day, items]) => (
             <div key={day}>
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-electric-400">
-                <Calendar className="size-4" /> {format(parseISO(day), "EEEE, MMMM d")}
+                <Calendar className="size-4" /> {fmt(parseISO(day), "EEEE d 'de' MMMM")}
               </div>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-6">
                 {items.map((p) => (
@@ -119,7 +120,7 @@ export default function PhotosPage() {
         </div>
       )}
 
-      <Drawer open={!!selected} onClose={() => setSelected(null)} eyebrow="Memory" title={selected?.title}>
+      <Drawer open={!!selected} onClose={() => setSelected(null)} eyebrow="Recuerdo" title={selected?.title}>
         {selected && (
           <div className="space-y-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -127,7 +128,7 @@ export default function PhotosPage() {
             <div className="flex items-center gap-2">
               <Avatar name={userName(selected.uploaderId)} color={SEED_USERS.find((u) => u.id === selected.uploaderId)?.avatarColor} size={28} />
               <span className="text-sm">{userName(selected.uploaderId)}</span>
-              <span className="text-xs text-muted-foreground">· {format(parseISO(selected.uploadedAt), "MMM d, yyyy")}</span>
+              <span className="text-xs text-muted-foreground">· {fmt(parseISO(selected.uploadedAt), "d MMM yyyy")}</span>
             </div>
             {selected.description && <p className="text-sm text-muted-foreground">{selected.description}</p>}
             <div className="flex flex-wrap gap-2">
@@ -143,11 +144,11 @@ export default function PhotosPage() {
                   />
                 </div>
                 <Button variant="glass" className="w-full" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`, "_blank")}>
-                  <Navigation className="size-4" /> Show where this was taken
+                  <Navigation className="size-4" /> Mostrar dónde se tomó
                 </Button>
               </>
             ) : (
-              <p className="rounded-xl border border-dashed border-white/10 p-3 text-center text-xs text-muted-foreground">No GPS data found in this photo.</p>
+              <p className="rounded-xl border border-dashed border-white/10 p-3 text-center text-xs text-muted-foreground">Esta foto no tiene datos de GPS.</p>
             )}
           </div>
         )}

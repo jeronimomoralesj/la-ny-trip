@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, isGuest, logout } = useAuth();
-  const now = useNow();
+  const now = useNow(30_000); // el reloj muestra HH:MM
   const [menuOpen, setMenuOpen] = useState(false);
   const phase = now ? currentPhase(now) : null;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-navy-950/70 px-4 backdrop-blur-xl sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-white/10 bg-navy-950/90 px-4 sm:px-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu}>
           <Menu className="size-5" />
@@ -43,7 +43,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           <div className="board-font text-sm font-semibold tabular-nums">
             {now ? new Date(now).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
           </div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Local time</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Hora local</div>
         </div>
         <div className="relative">
           <button onClick={() => setMenuOpen((v) => !v)} className="flex items-center gap-2 rounded-full p-0.5 transition hover:bg-white/5">
@@ -56,12 +56,12 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 <div className="px-3 py-2">
                   <div className="font-medium">{user?.name}</div>
                   {isGuest ? (
-                    <div className="text-xs text-muted-foreground">Browsing as guest</div>
+                    <div className="text-xs text-muted-foreground">Modo invitado</div>
                   ) : (
                     <div className="text-xs text-muted-foreground">{user?.email}</div>
                   )}
                   <div className="mt-1 inline-flex rounded-full bg-electric-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-electric-400">
-                    {isGuest ? "guest" : user?.role}
+                    {isGuest ? "invitado" : user?.role === "admin" ? "admin" : "miembro"}
                   </div>
                 </div>
                 {isGuest ? (
@@ -70,14 +70,14 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                     onClick={() => setMenuOpen(false)}
                     className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-electric-400 transition hover:bg-white/5"
                   >
-                    <LogIn className="size-4" /> Sign in for finance
+                    <LogIn className="size-4" /> Iniciar sesión (finanzas)
                   </Link>
                 ) : (
                   <button
                     onClick={() => { setMenuOpen(false); logout(); }}
                     className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
                   >
-                    <LogOut className="size-4" /> Sign out
+                    <LogOut className="size-4" /> Cerrar sesión
                   </button>
                 )}
               </div>

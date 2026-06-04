@@ -13,15 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { SectionTitle } from "@/components/ui/misc";
-import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
+import { cn, fmt } from "@/lib/utils";
+import { parseISO } from "date-fns";
 import type { FoodEntry, FoodKind } from "@/lib/types";
 
-const KIND: Record<FoodKind, { icon: any; color: string }> = {
-  restaurant: { icon: UtensilsCrossed, color: "#f97316" },
-  bar: { icon: Wine, color: "#a78bfa" },
-  cafe: { icon: Coffee, color: "#22d3ee" },
-  snack: { icon: Cookie, color: "#f5c451" },
+const KIND: Record<FoodKind, { icon: any; color: string; label: string }> = {
+  restaurant: { icon: UtensilsCrossed, color: "#f97316", label: "restaurante" },
+  bar: { icon: Wine, color: "#a78bfa", label: "bar" },
+  cafe: { icon: Coffee, color: "#22d3ee", label: "café" },
+  snack: { icon: Cookie, color: "#f5c451", label: "snack" },
 };
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
 
@@ -37,12 +37,12 @@ export default function FoodPage() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="Squad"
-        title="Food Journal"
+        eyebrow="Escuadrón"
+        title="Diario Gastronómico"
         action={
           <div className="flex gap-2">
-            <Tabs value={view} onChange={setView} tabs={[{ id: "list", label: "List", icon: List }, { id: "map", label: "Map", icon: MapIcon }]} />
-            <Button variant="gold" onClick={() => setOpen(true)}><Plus className="size-4" /> Log</Button>
+            <Tabs value={view} onChange={setView} tabs={[{ id: "list", label: "Lista", icon: List }, { id: "map", label: "Mapa", icon: MapIcon }]} />
+            <Button variant="gold" onClick={() => setOpen(true)}><Plus className="size-4" /> Registrar</Button>
           </div>
         }
       />
@@ -65,7 +65,7 @@ export default function FoodPage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="font-medium">{e.name}</div>
-                    <Badge variant="muted">{e.kind}</Badge>
+                    <Badge variant="muted">{meta.label}</Badge>
                   </div>
                   <div className="mt-1 flex items-center gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -74,7 +74,7 @@ export default function FoodPage() {
                   </div>
                   {e.notes && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{e.notes}</p>}
                   <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="size-3" /> {e.city} · {userName(e.loggedBy)} · {format(parseISO(e.date), "MMM d")}
+                    <MapPin className="size-3" /> {e.city} · {userName(e.loggedBy)} · {fmt(parseISO(e.date), "d MMM")}
                   </div>
                 </div>
               </motion.div>
@@ -95,7 +95,7 @@ export default function FoodPage() {
 function LogFood({ open, onClose, onAdd, loggedBy }: { open: boolean; onClose: () => void; onAdd: (e: Omit<FoodEntry, "id">) => void; loggedBy: string }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<FoodKind>("restaurant");
-  const [city, setCity] = useState("Los Angeles");
+  const [city, setCity] = useState("Los Ángeles");
   const [rating, setRating] = useState(5);
   const [notes, setNotes] = useState("");
 
@@ -106,15 +106,15 @@ function LogFood({ open, onClose, onAdd, loggedBy }: { open: boolean; onClose: (
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Log a spot">
+    <Modal open={open} onClose={onClose} title="Registrar un lugar">
       <div className="space-y-3">
-        <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
         <div className="grid grid-cols-2 gap-3">
           <Select value={kind} onChange={(e) => setKind(e.target.value as FoodKind)}>
-            {Object.keys(KIND).map((k) => <option key={k} value={k}>{k}</option>)}
+            {(Object.keys(KIND) as FoodKind[]).map((k) => <option key={k} value={k}>{KIND[k].label}</option>)}
           </Select>
           <Select value={city} onChange={(e) => setCity(e.target.value)}>
-            <option>Los Angeles</option><option>New York</option><option>Anaheim</option><option>Bogotá</option>
+            <option>Los Ángeles</option><option>Nueva York</option><option>Anaheim</option><option>Bogotá</option><option>Boston</option>
           </Select>
         </div>
         <div className="flex items-center gap-1">
@@ -124,8 +124,8 @@ function LogFood({ open, onClose, onAdd, loggedBy }: { open: boolean; onClose: (
             </button>
           ))}
         </div>
-        <Textarea placeholder="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-        <Button className="w-full" onClick={submit}>Save</Button>
+        <Textarea placeholder="Notas" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <Button className="w-full" onClick={submit}>Guardar</Button>
       </div>
     </Modal>
   );

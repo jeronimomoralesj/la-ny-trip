@@ -5,8 +5,10 @@ import { SEED_WEATHER } from "@/lib/seed-data";
 import type { WeatherSnapshot } from "@/lib/types";
 
 const CITIES = [
-  { name: "Los Angeles", lat: 34.0522, lon: -118.2437 },
-  { name: "New York", lat: 40.7128, lon: -74.006 },
+  { name: "Bogotá", lat: 4.711, lon: -74.0721 },
+  { name: "Boston", lat: 42.3601, lon: -71.0589 },
+  { name: "Los Ángeles", lat: 34.0522, lon: -118.2437 },
+  { name: "Nueva York", lat: 40.7128, lon: -74.006 },
 ];
 
 /**

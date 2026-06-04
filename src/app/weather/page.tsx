@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { useWeather } from "@/hooks/use-weather";
 import { SectionTitle, Skeleton } from "@/components/ui/misc";
 import { Card } from "@/components/ui/card";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { fmt } from "@/lib/utils";
 import type { WeatherSnapshot } from "@/lib/types";
 
 function emoji(icon: string) {
@@ -23,7 +24,7 @@ export default function WeatherPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Operations" title="Weather Center" />
+      <SectionTitle eyebrow="Operaciones" title="Centro del Clima" />
       {isLoading && <Skeleton className="h-64 w-full" />}
       <div className="grid gap-6 lg:grid-cols-2">
         {data?.map((w, i) => <CityWeather key={w.city} w={w} delay={i * 0.1} />)}
@@ -55,7 +56,7 @@ function CityWeather({ w, delay }: { w: WeatherSnapshot; delay: number }) {
         </div>
 
         <div className="border-t border-white/10 px-4 py-4">
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Hourly</div>
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Por hora</div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {w.hourly.map((h, i) => (
               <div key={i} className="flex min-w-[52px] flex-col items-center gap-1 rounded-xl border border-white/5 bg-white/[0.02] px-2 py-2.5">
@@ -68,11 +69,11 @@ function CityWeather({ w, delay }: { w: WeatherSnapshot; delay: number }) {
         </div>
 
         <div className="border-t border-white/10 px-4 py-4">
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">5-day</div>
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">5 días</div>
           <div className="space-y-1">
             {w.daily.map((d, i) => (
               <div key={i} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-white/[0.03]">
-                <span className="w-10 text-muted-foreground">{format(parseISO(d.date), "EEE")}</span>
+                <span className="w-10 text-muted-foreground">{fmt(parseISO(d.date), "EEE")}</span>
                 <span className="text-lg">{emoji(d.icon)}</span>
                 <span className="flex-1 text-xs text-muted-foreground">{d.condition}</span>
                 <span className="board-font font-semibold">{d.max}°</span>

@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/misc";
 import { PHASES } from "@/lib/seed-data";
-import { format, parseISO } from "date-fns";
-import { cn } from "@/lib/utils";
+import { parseISO } from "date-fns";
+import { cn, fmt } from "@/lib/utils";
 import type { TimelineEvent } from "@/lib/types";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -45,7 +45,7 @@ export default function TimelinePage() {
 
   return (
     <div>
-      <SectionTitle eyebrow="Operations Timeline" title="Mission Schedule" />
+      <SectionTitle eyebrow="Cronograma de Operaciones" title="Itinerario del Viaje" />
 
       <div className="relative space-y-8">
         {/* vertical rail */}
@@ -56,12 +56,12 @@ export default function TimelinePage() {
             <div className="mb-3 flex items-center gap-3 pl-1">
               <div className="board-font grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-navy-800 text-center text-xs font-bold leading-tight sm:size-14">
                 <div>
-                  <div className="text-gold-400">{format(parseISO(day), "dd")}</div>
-                  <div className="text-[9px] uppercase text-muted-foreground">{format(parseISO(day), "MMM")}</div>
+                  <div className="text-gold-400">{fmt(parseISO(day), "dd")}</div>
+                  <div className="text-[9px] uppercase text-muted-foreground">{fmt(parseISO(day), "MMM")}</div>
                 </div>
               </div>
               <div>
-                <div className="font-semibold">{format(parseISO(day), "EEEE")}</div>
+                <div className="font-semibold">{fmt(parseISO(day), "EEEE")}</div>
                 <div className="text-xs text-muted-foreground">{dayEvents[0]?.city}</div>
               </div>
             </div>
@@ -104,12 +104,12 @@ export default function TimelinePage() {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <h3 className="truncate font-semibold">{e.title}</h3>
-                            {isLive && <Badge variant="success">Live</Badge>}
+                            {isLive && <Badge variant="success">En vivo</Badge>}
                           </div>
                           <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{e.description}</p>
                         </div>
                         <div className="board-font shrink-0 text-right text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1"><Clock className="size-3" />{format(parseISO(e.start), "h:mm a")}</div>
+                          <div className="flex items-center gap-1"><Clock className="size-3" />{fmt(parseISO(e.start), "h:mm a")}</div>
                         </div>
                       </div>
                     </div>
@@ -124,21 +124,21 @@ export default function TimelinePage() {
       <Drawer
         open={!!selected}
         onClose={() => setSelected(null)}
-        eyebrow={selected ? format(parseISO(selected.start), "EEEE d MMMM") : ""}
+        eyebrow={selected ? fmt(parseISO(selected.start), "EEEE d MMMM") : ""}
         title={selected?.title}
       >
         {selected && (
           <div className="space-y-5">
             <div className="flex flex-wrap gap-2">
               <Badge variant="default"><MapPin className="size-3" /> {selected.city}</Badge>
-              <Badge variant="muted"><Clock className="size-3" /> {format(parseISO(selected.start), "h:mm a")}{selected.end ? ` – ${format(parseISO(selected.end), "h:mm a")}` : ""}</Badge>
+              <Badge variant="muted"><Clock className="size-3" /> {fmt(parseISO(selected.start), "h:mm a")}{selected.end ? ` – ${fmt(parseISO(selected.end), "h:mm a")}` : ""}</Badge>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{selected.description}</p>
 
             {selected.notes && (
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-electric-400">
-                  <FileText className="size-3.5" /> Notes
+                  <FileText className="size-3.5" /> Notas
                 </div>
                 <p className="text-sm text-muted-foreground">{selected.notes}</p>
               </div>
@@ -157,7 +157,7 @@ export default function TimelinePage() {
             {selected.lat && selected.lng && (
               <Button variant="glass" className="w-full"
                 onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`, "_blank")}>
-                <Navigation className="size-4" /> Open in Maps
+                <Navigation className="size-4" /> Abrir en Maps
               </Button>
             )}
           </div>

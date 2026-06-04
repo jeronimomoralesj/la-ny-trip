@@ -12,24 +12,25 @@ import { uploadFile } from "@/hooks/use-upload";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { SectionTitle } from "@/components/ui/misc";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { fmt } from "@/lib/utils";
 import type { TravelDocument, DocumentKind } from "@/lib/types";
 
 const KIND_ICON: Record<DocumentKind, any> = {
   flight: Plane, reservation: Hotel, ticket: Ticket, confirmation: BadgeCheck, id: CreditCard, other: FileText,
 };
-const FOLDERS = ["All", "Flights", "Hotels", "World Cup", "Theme Parks", "Transport", "IDs"];
+const FOLDERS = ["Todos", "Vuelos", "Hoteles", "Mundial", "Parques", "Transporte", "IDs"];
 
 export default function DocumentsPage() {
   const { user } = useAuth();
   const { data: docs, add } = useCollection<TravelDocument>("documents");
-  const [folder, setFolder] = useState("All");
+  const [folder, setFolder] = useState("Todos");
   const [uploading, setUploading] = useState(false);
-  const [newFolder, setNewFolder] = useState("Flights");
+  const [newFolder, setNewFolder] = useState("Vuelos");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const folders = Array.from(new Set([...FOLDERS, ...docs.map((d) => d.folder)]));
-  const filtered = folder === "All" ? docs : docs.filter((d) => d.folder === folder);
+  const filtered = folder === "Todos" ? docs : docs.filter((d) => d.folder === folder);
 
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,15 +52,15 @@ export default function DocumentsPage() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="Operations"
-        title="Document Vault"
+        eyebrow="Operaciones"
+        title="Baúl de Documentos"
         action={
           <div className="flex items-center gap-2">
             <Select value={newFolder} onChange={(e) => setNewFolder(e.target.value)} className="h-9 w-32">
-              {folders.filter((f) => f !== "All").map((f) => <option key={f}>{f}</option>)}
+              {folders.filter((f) => f !== "Todos").map((f) => <option key={f}>{f}</option>)}
             </Select>
             <Button variant="gold" onClick={() => fileRef.current?.click()} disabled={uploading}>
-              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Upload
+              {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Subir
             </Button>
             <input ref={fileRef} type="file" className="hidden" onChange={onUpload} />
           </div>
@@ -97,14 +98,14 @@ export default function DocumentsPage() {
                   <div className="truncate text-sm font-medium">{d.name}</div>
                   <div className="mt-0.5 flex items-center justify-between text-xs text-muted-foreground">
                     <span>{d.folder} · {d.sizeKb ?? "—"} KB</span>
-                    <span>{format(parseISO(d.uploadedAt), "MMM d")}</span>
+                    <span>{fmt(parseISO(d.uploadedAt), "d MMM")}</span>
                   </div>
                   <Button
                     variant="outline" size="sm" className="mt-3 w-full"
                     onClick={() => d.url !== "#" ? window.open(d.url, "_blank") : null}
                     disabled={d.url === "#"}
                   >
-                    <Download className="size-3.5" /> {d.url === "#" ? "Sample (no file)" : "Open / Download"}
+                    <Download className="size-3.5" /> {d.url === "#" ? "Ejemplo (sin archivo)" : "Abrir / Descargar"}
                   </Button>
                 </div>
               </motion.div>
@@ -114,7 +115,7 @@ export default function DocumentsPage() {
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/10 py-16 text-center">
           <FolderLock className="size-8 text-muted-foreground/40" />
-          <p className="text-muted-foreground">No documents in this folder.</p>
+          <p className="text-muted-foreground">No hay documentos en esta carpeta.</p>
         </div>
       )}
     </div>

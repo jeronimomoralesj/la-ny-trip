@@ -7,7 +7,7 @@ import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
 import { SEED_USERS } from "@/lib/seed-data";
 import { computeBalances, computeSettlements } from "@/lib/trip";
-import { formatUSD, cn } from "@/lib/utils";
+import { formatUSD, cn, fmt } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Modal } from "@/components/ui/drawer";
@@ -15,10 +15,15 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, EmptyState, SectionTitle } from "@/components/ui/misc";
 import { Tabs } from "@/components/ui/tabs";
 import { FinanceGate } from "@/components/auth/finance-gate";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import type { Expense, ExpenseCategory } from "@/lib/types";
 
 const CATEGORIES: ExpenseCategory[] = ["food", "drinks", "transport", "lodging", "tickets", "souvenirs", "groceries", "gas", "parking", "other"];
+const CAT_LABEL: Record<ExpenseCategory, string> = {
+  food: "comida", drinks: "bebidas", transport: "transporte", lodging: "alojamiento",
+  tickets: "entradas", souvenirs: "souvenirs", groceries: "mercado", gas: "gasolina",
+  parking: "parqueadero", other: "otro",
+};
 const USER_IDS = SEED_USERS.map((u) => u.id);
 const userName = (id: string) => SEED_USERS.find((u) => u.id === id)?.name ?? id;
 const userColor = (id: string) => SEED_USERS.find((u) => u.id === id)?.avatarColor;
@@ -48,9 +53,9 @@ function ExpensesInner() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="Money"
-        title="Expenses"
-        action={<Button variant="gold" onClick={() => setOpen(true)}><Plus className="size-4" /> Add</Button>}
+        eyebrow="Dinero"
+        title="Gastos"
+        action={<Button variant="gold" onClick={() => setOpen(true)}><Plus className="size-4" /> Agregar</Button>}
       />
 
       {/* Balance strip */}
@@ -64,7 +69,7 @@ function ExpensesInner() {
             <div className={cn("mt-2 board-font text-xl font-bold", b.net >= 0 ? "text-emerald-400" : "text-red-400")}>
               {b.net >= 0 ? "+" : ""}{formatUSD(b.net)}
             </div>
-            <div className="text-[11px] text-muted-foreground">paid {formatUSD(b.paid)}</div>
+            <div className="text-[11px] text-muted-foreground">pagó {formatUSD(b.paid)}</div>
           </motion.div>
         ))}
       </div>
@@ -72,12 +77,12 @@ function ExpensesInner() {
       {/* Settlements */}
       {settlements.length > 0 && (
         <div className="glass rounded-2xl p-5">
-          <div className="mb-3 text-sm font-semibold">Suggested settlements</div>
+          <div className="mb-3 text-sm font-semibold">Cómo saldar cuentas</div>
           <div className="flex flex-wrap gap-2">
             {settlements.map((s, i) => (
               <div key={i} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1.5 pl-1.5 pr-3 text-sm">
                 <Avatar name={userName(s.fromId)} color={userColor(s.fromId)} size={24} />
-                <span className="text-muted-foreground">pays</span>
+                <span className="text-muted-foreground">le paga a</span>
                 <Avatar name={userName(s.toId)} color={userColor(s.toId)} size={24} />
                 <span className="font-semibold text-gold-400">{formatUSD(s.amount)}</span>
               </div>
@@ -91,9 +96,9 @@ function ExpensesInner() {
           value={tab}
           onChange={setTab}
           tabs={[
-            { id: "all", label: "All" },
-            { id: "shared", label: "Shared", icon: Users },
-            { id: "personal", label: "Personal", icon: User },
+            { id: "all", label: "Todos" },
+            { id: "shared", label: "Compartidos", icon: Users },
+            { id: "personal", label: "Personales", icon: User },
           ]}
         />
         <div className="text-sm text-muted-foreground">Total: <span className="font-semibold text-foreground">{formatUSD(total)}</span></div>
@@ -110,11 +115,11 @@ function ExpensesInner() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{e.title}</span>
-                  <Badge variant={e.shared ? "cyan" : "muted"}>{e.shared ? "shared" : "personal"}</Badge>
+                  <Badge variant={e.shared ? "cyan" : "muted"}>{e.shared ? "compartido" : "personal"}</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {userName(e.payerId)} paid · {e.category} · {format(parseISO(e.date), "MMM d")}
-                  {e.shared && ` · split ${e.participantIds.length} ways`}
+                  {userName(e.payerId)} pagó · {CAT_LABEL[e.category]} · {fmt(parseISO(e.date), "d MMM")}
+                  {e.shared && ` · dividido entre ${e.participantIds.length}`}
                 </div>
               </div>
               <div className="board-font font-semibold">{formatUSD(e.amount)}</div>
@@ -127,7 +132,7 @@ function ExpensesInner() {
           ))}
         </div>
       ) : (
-        <EmptyState icon={Receipt} title="No expenses yet" hint="Add the first one to start tracking who owes who." />
+        <EmptyState icon={Receipt} title="Aún no hay gastos" hint="Agrega el primero para empezar a calcular quién le debe a quién." />
       )}
 
       <AddExpense open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutate(e)} defaultPayer={user?.id ?? "jeronimo"} />
@@ -157,24 +162,24 @@ function AddExpense({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Add expense">
+    <Modal open={open} onClose={onClose} title="Agregar gasto">
       <div className="space-y-3">
-        <Input placeholder="What was it for?" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input placeholder="¿Para qué fue?" value={title} onChange={(e) => setTitle(e.target.value)} />
         <div className="grid grid-cols-2 gap-3">
-          <Input placeholder="Amount (USD)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <Input placeholder="Monto (USD)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
           <Select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {CATEGORIES.map((c) => <option key={c} value={c}>{CAT_LABEL[c]}</option>)}
           </Select>
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">Paid by</label>
+          <label className="text-xs text-muted-foreground">Pagado por</label>
           <Select value={payerId} onChange={(e) => setPayerId(e.target.value)} className="mt-1">
             {SEED_USERS.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </Select>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} className="size-4 accent-electric-500" />
-          Shared expense (split it)
+          Gasto compartido (dividir)
         </label>
         {shared && (
           <div className="flex flex-wrap gap-2">
@@ -192,8 +197,8 @@ function AddExpense({
             })}
           </div>
         )}
-        <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
-        <Button className="w-full" onClick={submit}>Save expense</Button>
+        <Textarea placeholder="Notas (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <Button className="w-full" onClick={submit}>Guardar gasto</Button>
       </div>
     </Modal>
   );

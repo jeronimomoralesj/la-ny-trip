@@ -4,8 +4,8 @@ import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/app-shell";
 
 export const metadata: Metadata = {
-  title: "la-ny-viaje — Mission Control",
-  description: "A private travel operating system for four friends. Colombia → Los Angeles → New York, World Cup 2026.",
+  title: "la-ny-viaje — Centro de Mando",
+  description: "Sistema operativo de viaje privado para cuatro amigos. Colombia → Los Ángeles → Nueva York, Mundial 2026.",
 };
 
 export const viewport: Viewport = {
@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="es" className="dark">
       <body>
         <Providers>
           <AppShell>{children}</AppShell>

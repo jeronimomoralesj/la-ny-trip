@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { SectionTitle, Avatar } from "@/components/ui/misc";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import type { FeedPost } from "@/lib/types";
 
 const user = (id: string) => SEED_USERS.find((u) => u.id === id);
@@ -51,21 +52,21 @@ export default function FeedPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <SectionTitle eyebrow="Squad" title="Group Feed" />
+      <SectionTitle eyebrow="Escuadrón" title="Feed del Grupo" />
 
       <div className="glass rounded-2xl p-4">
         <div className="flex gap-3">
           <Avatar name={me?.name ?? ""} color={me?.avatarColor} size={40} />
           <div className="flex-1">
-            <Textarea placeholder="Share an update with the squad…" value={body} onChange={(e) => setBody(e.target.value)} className="min-h-[60px] border-0 bg-transparent focus-visible:ring-0" />
+            <Textarea placeholder="Comparte algo con el escuadrón…" value={body} onChange={(e) => setBody(e.target.value)} className="min-h-[60px] border-0 bg-transparent focus-visible:ring-0" />
             {image && <div className="mt-1 text-xs text-electric-400">📎 {image.name}</div>}
             <div className="mt-2 flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={() => fileRef.current?.click()}>
-                <ImagePlus className="size-4" /> Photo
+                <ImagePlus className="size-4" /> Foto
               </Button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
               <Button size="sm" onClick={post} disabled={posting}>
-                {posting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} Post
+                {posting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} Publicar
               </Button>
             </div>
           </div>
@@ -82,7 +83,7 @@ export default function FeedPage() {
                   <Avatar name={u?.name ?? ""} color={u?.avatarColor} size={40} />
                   <div>
                     <div className="text-sm font-semibold">{u?.name}</div>
-                    <div className="text-xs text-muted-foreground">{formatDistanceToNow(parseISO(p.createdAt), { addSuffix: true })}</div>
+                    <div className="text-xs text-muted-foreground">{formatDistanceToNow(parseISO(p.createdAt), { addSuffix: true, locale: es })}</div>
                   </div>
                 </div>
                 {p.body && <p className="mt-3 whitespace-pre-wrap text-sm">{p.body}</p>}

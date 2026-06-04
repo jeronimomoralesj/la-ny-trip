@@ -1,5 +1,10 @@
-import { PHASES, SEED_TIMELINE, TRIP_START, TRIP_END } from "./seed-data";
-import type { PhaseMeta, TimelineEvent, Expense, Balance, Settlement } from "./types";
+import { PHASES, SEED_TIMELINE, TRIP_START, TRIP_END, HOME_CITY } from "./seed-data";
+import type { PhaseMeta, TimelineEvent, Flight, Expense, Balance, Settlement, TravelGroup } from "./types";
+
+/** True if an event/flight applies to the given group (group-specific or shared). */
+function appliesTo(itemGroup: TravelGroup | undefined, group: TravelGroup) {
+  return !itemGroup || itemGroup === "all" || itemGroup === group;
+}
 
 export function currentPhase(nowMs: number): PhaseMeta {
   const active = PHASES.find(
@@ -11,11 +16,43 @@ export function currentPhase(nowMs: number): PhaseMeta {
   return PHASES[PHASES.length - 1];
 }
 
-export function nextEvent(nowMs: number, events: TimelineEvent[] = SEED_TIMELINE): TimelineEvent | null {
+export function nextEvent(
+  nowMs: number,
+  events: TimelineEvent[] = SEED_TIMELINE,
+  group: TravelGroup = "all",
+): TimelineEvent | null {
   const upcoming = [...events]
-    .filter((e) => new Date(e.start).getTime() > nowMs)
+    .filter((e) => new Date(e.start).getTime() > nowMs && appliesTo(e.group, group))
     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
   return upcoming[0] ?? null;
+}
+
+/** Events for a group, sorted — used by the group-aware itinerary. */
+export function eventsForGroup(events: TimelineEvent[], group: TravelGroup): TimelineEvent[] {
+  return [...events]
+    .filter((e) => appliesTo(e.group, group))
+    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+}
+
+/** Where a group is right now: latest started event's city, else their home city. */
+export function groupCurrentCity(nowMs: number, events: TimelineEvent[], group: TravelGroup): string {
+  const started = eventsForGroup(events, group).filter((e) => new Date(e.start).getTime() <= nowMs);
+  const last = started[started.length - 1];
+  if (last) return last.city;
+  return group === "boston" ? HOME_CITY.boston : HOME_CITY.bogota;
+}
+
+/** The next city the group arrives in (next flight's destination). */
+export function nextCityArrival(
+  nowMs: number,
+  flights: Flight[],
+  group: TravelGroup,
+): { city: string; code: string; at: string } | null {
+  const upcoming = [...flights]
+    .filter((f) => new Date(f.arrival).getTime() > nowMs && appliesTo(f.group, group))
+    .sort((a, b) => new Date(a.departure).getTime() - new Date(b.departure).getTime());
+  const f = upcoming[0];
+  return f ? { city: f.to.city, code: f.to.code, at: f.arrival } : null;
 }
 
 export function tripProgress(nowMs: number): number {

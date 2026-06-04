@@ -30,13 +30,13 @@ export default function PackingPage() {
 
   const addItem = () => {
     if (!label.trim()) return;
-    add.mutate({ ownerId: owner, label: label.trim(), checked: false, category: "Custom" } as Omit<ChecklistItem, "id">);
+    add.mutate({ ownerId: owner, label: label.trim(), checked: false, category: "Personalizado" } as Omit<ChecklistItem, "id">);
     setLabel("");
   };
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Operations" title="Packing Center" />
+      <SectionTitle eyebrow="Operaciones" title="Centro de Equipaje" />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs value={owner} onChange={setOwner} tabs={SEED_USERS.map((u) => ({ id: u.id, label: u.name }))} />
@@ -47,8 +47,8 @@ export default function PackingPage() {
           <Avatar name={SEED_USERS.find((u) => u.id === owner)?.name ?? ""} color={SEED_USERS.find((u) => u.id === owner)?.avatarColor} size={48} />
           <div className="flex-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{SEED_USERS.find((u) => u.id === owner)?.name}&apos;s bag</span>
-              <span className="text-muted-foreground">{done}/{mine.length} packed</span>
+              <span className="font-medium">Maleta de {SEED_USERS.find((u) => u.id === owner)?.name}</span>
+              <span className="text-muted-foreground">{done}/{mine.length} empacado</span>
             </div>
             <Progress value={pct} className="mt-2 h-2.5" />
           </div>
@@ -57,8 +57,8 @@ export default function PackingPage() {
       </div>
 
       <div className="flex gap-2">
-        <Input placeholder="Add an item…" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} />
-        <Button onClick={addItem}><Plus className="size-4" /> Add</Button>
+        <Input placeholder="Agregar un artículo…" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} />
+        <Button onClick={addItem}><Plus className="size-4" /> Agregar</Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -86,7 +86,7 @@ export default function PackingPage() {
         {mine.length === 0 && (
           <div className="col-span-full flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/10 py-12 text-center">
             <Luggage className="size-8 text-muted-foreground/40" />
-            <p className="text-muted-foreground">Empty bag — add the first item above.</p>
+            <p className="text-muted-foreground">Maleta vacía — agrega el primer artículo arriba.</p>
           </div>
         )}
       </div>

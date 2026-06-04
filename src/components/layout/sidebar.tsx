@@ -18,7 +18,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <div>
           <div className="text-sm font-bold tracking-tight">la-ny-viaje</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">World Cup 2026</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Mundial 2026</div>
         </div>
       </Link>
 

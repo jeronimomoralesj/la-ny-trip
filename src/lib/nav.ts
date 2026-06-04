@@ -8,26 +8,26 @@ export interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  group: "Command" | "Operations" | "Finance" | "Squad";
+  group: "Comando" | "Operaciones" | "Finanzas" | "Escuadrón";
 }
 
 export const NAV: NavItem[] = [
-  { href: "/", label: "Mission Control", icon: LayoutDashboard, group: "Command" },
-  { href: "/timeline", label: "Timeline", icon: CalendarRange, group: "Command" },
-  { href: "/map", label: "Map", icon: Map, group: "Command" },
-  { href: "/flights", label: "Flights", icon: Plane, group: "Operations" },
-  { href: "/weather", label: "Weather", icon: CloudSun, group: "Operations" },
-  { href: "/documents", label: "Documents", icon: FolderLock, group: "Operations" },
-  { href: "/packing", label: "Packing", icon: CheckSquare, group: "Operations" },
-  { href: "/expenses", label: "Expenses", icon: Wallet, group: "Finance" },
-  { href: "/finance", label: "Finance Center", icon: LineChart, group: "Finance" },
-  { href: "/photos", label: "Photo Vault", icon: Images, group: "Squad" },
-  { href: "/feed", label: "Group Feed", icon: MessagesSquare, group: "Squad" },
-  { href: "/parks", label: "Theme Parks", icon: FerrisWheel, group: "Squad" },
-  { href: "/food", label: "Food Journal", icon: UtensilsCrossed, group: "Squad" },
-  { href: "/analytics", label: "Analytics", icon: Trophy, group: "Squad" },
-  { href: "/assistant", label: "AI Assistant", icon: Bot, group: "Squad" },
-  { href: "/elections", label: "Election Hub", icon: Vote, group: "Squad" },
+  { href: "/", label: "Centro de Mando", icon: LayoutDashboard, group: "Comando" },
+  { href: "/timeline", label: "Cronograma", icon: CalendarRange, group: "Comando" },
+  { href: "/map", label: "Mapa", icon: Map, group: "Comando" },
+  { href: "/flights", label: "Vuelos", icon: Plane, group: "Operaciones" },
+  { href: "/weather", label: "Clima", icon: CloudSun, group: "Operaciones" },
+  { href: "/documents", label: "Documentos", icon: FolderLock, group: "Operaciones" },
+  { href: "/packing", label: "Equipaje", icon: CheckSquare, group: "Operaciones" },
+  { href: "/expenses", label: "Gastos", icon: Wallet, group: "Finanzas" },
+  { href: "/finance", label: "Centro Financiero", icon: LineChart, group: "Finanzas" },
+  { href: "/photos", label: "Baúl de Fotos", icon: Images, group: "Escuadrón" },
+  { href: "/feed", label: "Feed del Grupo", icon: MessagesSquare, group: "Escuadrón" },
+  { href: "/parks", label: "Parques", icon: FerrisWheel, group: "Escuadrón" },
+  { href: "/food", label: "Diario Gastronómico", icon: UtensilsCrossed, group: "Escuadrón" },
+  { href: "/analytics", label: "Analíticas", icon: Trophy, group: "Escuadrón" },
+  { href: "/assistant", label: "Asistente IA", icon: Bot, group: "Escuadrón" },
+  { href: "/elections", label: "Elecciones", icon: Vote, group: "Escuadrón" },
 ];
 
-export const NAV_GROUPS: NavItem["group"][] = ["Command", "Operations", "Finance", "Squad"];
+export const NAV_GROUPS: NavItem["group"][] = ["Comando", "Operaciones", "Finanzas", "Escuadrón"];

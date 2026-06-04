@@ -31,23 +31,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Sidebar />
       </aside>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — single keyed child so AnimatePresence always unmounts it */}
       <AnimatePresence>
         {mobileOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
-            />
+          <motion.div
+            key="mobile-sidebar"
+            className="fixed inset-0 z-50 lg:hidden"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
             <motion.aside
-              className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-navy-900/95 backdrop-blur-2xl lg:hidden"
+              className="absolute left-0 top-0 h-full w-64 border-r border-white/10 bg-navy-900/95 backdrop-blur-2xl"
               initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
             >
               <Sidebar onNavigate={() => setMobileOpen(false)} />
             </motion.aside>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
 

@@ -23,14 +23,15 @@ export function Drawer({
   return (
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+        // Single keyed child → AnimatePresence siempre lo desmonta limpio.
+        <motion.div
+          key="drawer"
+          className="fixed inset-0 z-50"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.aside
-            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-navy-900/95 backdrop-blur-2xl"
+            className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-navy-900/95 backdrop-blur-2xl"
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 280 }}
           >
@@ -50,7 +51,7 @@ export function Drawer({
             <div className="flex-1 overflow-y-auto p-6">{children}</div>
             {footer && <div className="border-t border-white/10 p-6">{footer}</div>}
           </motion.aside>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -68,33 +69,30 @@ export function Modal({
   return (
     <AnimatePresence>
       {open && (
-        <>
+        <motion.div
+          key="modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        >
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <motion.div
-              className={`glass w-full ${maxWidth} rounded-2xl`}
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ type: "spring", damping: 26, stiffness: 320 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {title && (
-                <div className="flex items-center justify-between border-b border-white/10 p-5">
-                  <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
-                  <button onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-white/10 hover:text-foreground">
-                    <X className="size-5" />
-                  </button>
-                </div>
-              )}
-              <div className="p-5">{children}</div>
-            </motion.div>
-          </div>
-        </>
+            className={`glass relative w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-2xl`}
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+          >
+            {title && (
+              <div className="flex items-center justify-between border-b border-white/10 p-5">
+                <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+                <button onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-white/10 hover:text-foreground">
+                  <X className="size-5" />
+                </button>
+              </div>
+            )}
+            <div className="p-5">{children}</div>
+          </motion.div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

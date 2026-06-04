@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { useEffect, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 
 export interface MapPin {
   id: string;
@@ -13,10 +12,12 @@ export interface MapPin {
   color?: string;
 }
 
-const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-
+/**
+ * Keyless map — Leaflet + OpenStreetMap/CARTO tiles. No token required.
+ * Leaflet touches `window`, so it's imported dynamically inside the effect.
+ */
 export function TripMap({
-  pins, routes = [], onSelect, className, initialCenter = [-100, 30], initialZoom = 2.4,
+  pins, routes = [], onSelect, className, initialCenter = [-90, 25], initialZoom = 3,
 }: {
   pins: MapPin[];
   routes?: [number, number][][];
@@ -26,76 +27,68 @@ export function TripMap({
   initialZoom?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<any>(null);
+  const layerRef = useRef<any>(null);
+  const LRef = useRef<any>(null);
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+  const [ready, setReady] = useState(0);
 
+  // Init once
   useEffect(() => {
-    if (!TOKEN || !ref.current || mapRef.current) return;
-    mapboxgl.accessToken = TOKEN;
-    const map = new mapboxgl.Map({
-      container: ref.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: initialCenter,
-      zoom: initialZoom,
-      attributionControl: false,
-    });
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
-    mapRef.current = map;
+    let cancelled = false;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      if (cancelled || !ref.current || mapRef.current) return;
+      LRef.current = L;
+      const map = L.map(ref.current, { attributionControl: true, scrollWheelZoom: true })
+        .setView([initialCenter[1], initialCenter[0]], initialZoom);
+      mapRef.current = map;
 
-    map.on("load", () => {
-      routes.forEach((coords, i) => {
-        map.addSource(`route-${i}`, {
-          type: "geojson",
-          data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: coords } },
-        });
-        map.addLayer({
-          id: `route-${i}`,
-          type: "line",
-          source: `route-${i}`,
-          paint: { "line-color": "#3b82f6", "line-width": 2.5, "line-dasharray": [2, 1.5], "line-opacity": 0.8 },
-        });
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: "abcd",
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Static routes (dashed lines between cities)
+      routes.forEach((coords) => {
+        const latlngs = coords.map(([lng, lat]) => [lat, lng]) as [number, number][];
+        L.polyline(latlngs, { color: "#3b82f6", weight: 2.5, dashArray: "6 7", opacity: 0.85 }).addTo(map);
       });
-    });
 
-    return () => { map.remove(); mapRef.current = null; };
+      layerRef.current = L.layerGroup().addTo(map);
+      setReady((n) => n + 1);
+    })();
+    return () => {
+      cancelled = true;
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Render / refresh markers when pins change
   useEffect(() => {
+    const L = LRef.current;
     const map = mapRef.current;
-    if (!map) return;
-    const markers: mapboxgl.Marker[] = [];
+    const layer = layerRef.current;
+    if (!L || !map || !layer) return;
+    layer.clearLayers();
+    const pts: [number, number][] = [];
     pins.forEach((p) => {
-      const el = document.createElement("div");
-      el.style.cssText = "cursor:pointer;width:18px;height:18px;border-radius:9999px;border:2px solid white;box-shadow:0 0 0 4px rgba(0,0,0,.3),0 0 14px var(--c);";
-      el.style.background = p.color ?? "#3b82f6";
-      el.style.setProperty("--c", (p.color ?? "#3b82f6") + "cc");
-      const popup = new mapboxgl.Popup({ offset: 18, closeButton: false }).setHTML(
-        `<div style="font-family:system-ui;padding:2px 4px"><div style="font-weight:600;color:#0c1024">${p.title}</div>${p.subtitle ? `<div style="font-size:12px;color:#475569">${p.subtitle}</div>` : ""}</div>`,
+      const m = L.circleMarker([p.lat, p.lng], {
+        radius: 8, color: "#0b1020", weight: 2, fillColor: p.color ?? "#3b82f6", fillOpacity: 1,
+      }).addTo(layer);
+      m.bindTooltip(
+        `<strong>${p.title}</strong>${p.subtitle ? `<br/><span style="color:#94a3b8">${p.subtitle}</span>` : ""}`,
+        { direction: "top", offset: [0, -6] },
       );
-      const m = new mapboxgl.Marker(el).setLngLat([p.lng, p.lat]).setPopup(popup).addTo(map);
-      el.addEventListener("mouseenter", () => m.togglePopup());
-      el.addEventListener("mouseleave", () => m.togglePopup());
-      el.addEventListener("click", () => onSelect?.(p.id));
-      markers.push(m);
+      m.on("click", () => onSelectRef.current?.(p.id));
+      pts.push([p.lat, p.lng]);
     });
-    return () => markers.forEach((m) => m.remove());
-  }, [pins, onSelect]);
+    if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 });
+    else if (pts.length === 1) map.setView(pts[0], 11);
+  }, [pins, ready]);
 
-  if (!TOKEN) {
-    return (
-      <div className={className}>
-        <div className="grid h-full place-items-center rounded-2xl border border-dashed border-white/15 bg-navy-800/40 p-8 text-center">
-          <div>
-            <p className="font-medium">Falta el token de Mapbox</p>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Agrega <code className="rounded bg-white/10 px-1">NEXT_PUBLIC_MAPBOX_TOKEN</code> en
-              <code className="rounded bg-white/10 px-1">.env.local</code> para activar el mapa. Mientras tanto, las ubicaciones aparecen en la lista.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return <div ref={ref} className={className} />;
+  return <div ref={ref} className={className} style={{ background: "#0c1024" }} />;
 }

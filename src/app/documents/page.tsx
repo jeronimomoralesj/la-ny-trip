@@ -8,7 +8,8 @@ import {
 import { motion } from "framer-motion";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { uploadFile } from "@/hooks/use-upload";
+import { fileToBase64 } from "@/hooks/use-upload";
+import { notify } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { SectionTitle } from "@/components/ui/misc";
@@ -20,6 +21,18 @@ const KIND_ICON: Record<DocumentKind, any> = {
   flight: Plane, reservation: Hotel, ticket: Ticket, confirmation: BadgeCheck, id: CreditCard, other: FileText,
 };
 const FOLDERS = ["Todos", "Vuelos", "Hoteles", "Mundial", "Parques", "Transporte", "IDs"];
+
+function downloadDoc(d: TravelDocument) {
+  if (d.url === "#") return;
+  const a = document.createElement("a");
+  a.href = d.url;
+  a.download = d.name;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
 export default function DocumentsPage() {
   const { user } = useAuth();
@@ -35,14 +48,23 @@ export default function DocumentsPage() {
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Firestore guarda hasta ~1MB por documento; base64 infla ~33%.
+    if (file.size > 720 * 1024) {
+      notify("El archivo es muy grande para guardar (máx. ~700 KB). Comprime el PDF o sube una captura.", "error");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setUploading(true);
     try {
-      const url = await uploadFile(file, "documents");
+      const url = await fileToBase64(file); // se almacena en base64 (data URL)
       const kind: DocumentKind = file.type.includes("image") ? "ticket" : "reservation";
-      add.mutate({
+      await add.mutateAsync({
         name: file.name, kind, folder: newFolder, url, mimeType: file.type || "application/octet-stream",
         uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(), sizeKb: Math.round(file.size / 1024),
       } as Omit<TravelDocument, "id">);
+      notify("Documento guardado", "success");
+    } catch {
+      /* el toast de error ya se muestra */
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -102,7 +124,7 @@ export default function DocumentsPage() {
                   </div>
                   <Button
                     variant="outline" size="sm" className="mt-3 w-full"
-                    onClick={() => d.url !== "#" ? window.open(d.url, "_blank") : null}
+                    onClick={() => downloadDoc(d)}
                     disabled={d.url === "#"}
                   >
                     <Download className="size-3.5" /> {d.url === "#" ? "Ejemplo (sin archivo)" : "Abrir / Descargar"}

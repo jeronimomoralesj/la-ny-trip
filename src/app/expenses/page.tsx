@@ -135,14 +135,14 @@ function ExpensesInner() {
         <EmptyState icon={Receipt} title="Aún no hay gastos" hint="Agrega el primero para empezar a calcular quién le debe a quién." />
       )}
 
-      <AddExpense open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutate(e)} defaultPayer={user?.id ?? "jeronimo"} />
+      <AddExpense open={open} onClose={() => setOpen(false)} onAdd={(e) => add.mutateAsync(e)} defaultPayer={user?.id ?? "jeronimo"} />
     </div>
   );
 }
 
 function AddExpense({
   open, onClose, onAdd, defaultPayer,
-}: { open: boolean; onClose: () => void; onAdd: (e: Omit<Expense, "id">) => void; defaultPayer: string }) {
+}: { open: boolean; onClose: () => void; onAdd: (e: Omit<Expense, "id">) => void | Promise<unknown>; defaultPayer: string }) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<ExpenseCategory>("food");
@@ -150,15 +150,23 @@ function AddExpense({
   const [shared, setShared] = useState(true);
   const [participants, setParticipants] = useState<string[]>(USER_IDS);
   const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const submit = () => {
-    if (!title || !amount) return;
-    onAdd({
-      title, amount: parseFloat(amount), category, payerId, shared,
-      participantIds: shared ? participants : [payerId],
-      notes, date: new Date().toISOString().slice(0, 10),
-    });
-    setTitle(""); setAmount(""); setNotes(""); onClose();
+  const submit = async () => {
+    if (!title.trim() || !amount) return;
+    setSaving(true);
+    try {
+      await onAdd({
+        title: title.trim(), amount: parseFloat(amount), category, payerId, shared,
+        participantIds: shared ? participants : [payerId],
+        notes, date: new Date().toISOString().slice(0, 10),
+      });
+      setTitle(""); setAmount(""); setNotes(""); onClose();
+    } catch {
+      /* el toast de error ya se muestra; mantenemos el modal abierto */
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -198,7 +206,7 @@ function AddExpense({
           </div>
         )}
         <Textarea placeholder="Notas (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
-        <Button className="w-full" onClick={submit}>Guardar gasto</Button>
+        <Button className="w-full" onClick={submit} disabled={saving}>{saving ? "Guardando…" : "Guardar gasto"}</Button>
       </div>
     </Modal>
   );

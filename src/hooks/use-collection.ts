@@ -6,6 +6,18 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
 import { localStore } from "@/lib/local-store";
+import { notify } from "@/components/ui/toast";
+
+function explain(err: any): string {
+  const code = String(err?.code ?? err?.message ?? "");
+  if (code.includes("permission-denied") || code.includes("insufficient"))
+    return "Permiso denegado por Firestore. Revisa las reglas de seguridad (deben permitir lectura/escritura a usuarios autenticados).";
+  if (code.includes("unavailable") || code.includes("network"))
+    return "Sin conexión con Firestore. Revisa tu internet.";
+  if (code.includes("not-found"))
+    return "La base de datos Firestore no existe todavía. Créala en la consola de Firebase.";
+  return "No se pudo guardar. " + code;
+}
 
 /**
  * One generic data hook for every Firestore collection.
@@ -41,6 +53,7 @@ export function useCollection<T extends { id: string }>(name: string) {
       return localStore.add<T>(name, item as any);
     },
     onSuccess: invalidate,
+    onError: (e) => notify(explain(e), "error"),
   });
 
   const update = useMutation({
@@ -53,6 +66,7 @@ export function useCollection<T extends { id: string }>(name: string) {
       return { id, patch };
     },
     onSuccess: invalidate,
+    onError: (e) => notify(explain(e), "error"),
   });
 
   const remove = useMutation({
@@ -65,6 +79,7 @@ export function useCollection<T extends { id: string }>(name: string) {
       return id;
     },
     onSuccess: invalidate,
+    onError: (e) => notify(explain(e), "error"),
   });
 
   return {

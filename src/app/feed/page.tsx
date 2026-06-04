@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, ImagePlus, Loader2 } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { uploadFile } from "@/hooks/use-upload";
+import { compressImageToBase64 } from "@/hooks/use-upload";
+import { notify } from "@/components/ui/toast";
 import { SEED_USERS } from "@/lib/seed-data";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -31,12 +32,14 @@ export default function FeedPage() {
     if (!body.trim() && !image) return;
     setPosting(true);
     try {
-      const imageUrl = image ? await uploadFile(image, "feed") : undefined;
-      add.mutate({
+      const imageUrl = image ? await compressImageToBase64(image) : undefined;
+      await add.mutateAsync({
         authorId: me?.id ?? "jeronimo", body: body.trim(), createdAt: new Date().toISOString(),
         reactions: {}, ...(imageUrl ? { imageUrl } : {}),
       } as Omit<FeedPost, "id">);
       setBody(""); setImage(null);
+    } catch {
+      /* el toast de error ya se muestra */
     } finally {
       setPosting(false);
     }

@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import { Upload, MapPin, Calendar, Grid3x3, Map as MapIcon, Navigation, Loader2 } from "lucide-react";
 import { useCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/lib/auth-context";
-import { uploadFile, extractGps } from "@/hooks/use-upload";
+import { compressImageToBase64, extractGps } from "@/hooks/use-upload";
+import { notify } from "@/components/ui/toast";
 import { TripMap, type MapPin as Pin } from "@/components/map/trip-map";
 import { Drawer } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -36,12 +37,15 @@ export default function PhotosPage() {
     if (!file) return;
     setUploading(true);
     try {
-      const [url, gps] = await Promise.all([uploadFile(file, "photos"), extractGps(file)]);
-      add.mutate({
+      const [url, gps] = await Promise.all([compressImageToBase64(file), extractGps(file)]);
+      await add.mutateAsync({
         url, uploaderId: user?.id ?? "jeronimo", uploadedAt: new Date().toISOString(),
         title: file.name.replace(/\.[^.]+$/, ""), tags: [], city: "",
         ...(gps ? { lat: gps.lat, lng: gps.lng } : {}),
       } as Omit<Photo, "id">);
+      notify("Foto subida", "success");
+    } catch {
+      /* el toast de error ya se muestra */
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
